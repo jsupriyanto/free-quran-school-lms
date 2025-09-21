@@ -20,6 +20,7 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import Logout from "@mui/icons-material/Logout";
 import { useParams } from "next/navigation";
+import authService from "@/services/auth.service";
 
 const Profile = () => {
   const { lang } = useParams();
@@ -32,6 +33,8 @@ const Profile = () => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const currentUser = authService.getCurrentUser();
   return (
     <>
       <Tooltip title="Account settings">
@@ -46,7 +49,7 @@ const Profile = () => {
         >
           <Avatar
             src="/images/user1.png"
-            alt="Adison Jeck"
+            alt={currentUser.name}
             sx={{ width: 40, height: 40 }}
           />
         </IconButton>
@@ -94,7 +97,10 @@ const Profile = () => {
           <Avatar src="/images/user1.png" className="mr-1" />
           <Box>
             <Typography sx={{ fontSize: "11px", color: "#757FEF" }}>
-              Admin
+              {currentUser.roles
+                .map((role) => role.replace('ROLE_', '').toLowerCase())
+                .map((role) => role.charAt(0).toUpperCase() + role.slice(1))
+                .join(', ')}
             </Typography>
             <Typography
               sx={{
@@ -103,7 +109,7 @@ const Profile = () => {
                 fontWeight: "500",
               }}
             >
-              Adison Jeck
+              {currentUser.name}
             </Typography>
           </Box>
         </MenuItem>
@@ -166,20 +172,6 @@ const Profile = () => {
           </Link>
         </MenuItem>
 
-        <MenuItem>
-          <ListItemIcon sx={{ mr: "-8px", mt: "-3px" }}>
-            <AttachMoneyIcon fontSize="small" />
-          </ListItemIcon>
-          <Link
-            href={`/${lang}/pages/pricing/`}
-            fontSize="13px"
-            color="inherit"
-            underline="none"
-          >
-            Pricing
-          </Link>
-        </MenuItem>
-
         <Divider />
 
         <MenuItem>
@@ -188,7 +180,11 @@ const Profile = () => {
           </ListItemIcon>
 
           <Link
-            href={`/${lang}/authentication/logout/`}
+            href="#"
+            onClick={() => {
+              authService.logout();
+              window.location.href = `/${lang}/authentication/sign-in`;
+            }}
             fontSize="13px"
             color="inherit"
             underline="none"

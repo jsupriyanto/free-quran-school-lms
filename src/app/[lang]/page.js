@@ -1,91 +1,80 @@
-import * as React from "react";
 import Grid from "@mui/material/Grid";
-import Features from "@/components/Dashboard/eCommerce/Features";
-import Ratings from "@/components/Dashboard/eCommerce/Ratings";
-import AudienceOverview from "@/components/Dashboard/eCommerce/AudienceOverview";
-import VisitsByDay from "@/components/Dashboard/eCommerce/VisitsByDay";
-import Impressions from "@/components/Dashboard/eCommerce/Impressions";
-import ActivityTimeline from "@/components/Dashboard/eCommerce/ActivityTimeline";
-import RevenuStatus from "@/components/Dashboard/eCommerce/RevenuStatus";
-import SalesByCountries from "@/components/Dashboard/eCommerce/SalesByCountries";
-import NewCustomers from "@/components/Dashboard/eCommerce/NewCustomers";
-import RecentOrders from "@/components/Dashboard/eCommerce/RecentOrders";
-import TeamMembersList from "@/components/Dashboard/eCommerce/TeamMembersList";
-import BestSellingProducts from "@/components/Dashboard/eCommerce/BestSellingProducts";
-import LiveVisitsOnOurSite from "@/components/Dashboard/eCommerce/LiveVisitsOnOurSite";
+import Features from "@/components/Dashboard/LMSCourses/Features";
+import YourProgress from "@/components/Dashboard/LMSCourses/YourProgress";
+import ExperienceIQ from "@/components/Dashboard/LMSCourses/ExperienceIQ";
+import HoursSpent from "@/components/Dashboard/LMSCourses/HoursSpent";
+import MyPlanning from "@/components/Dashboard/LMSCourses/MyPlanning";
+import TopInstructor from "@/components/Dashboard/LMSCourses/TopInstructor";
+import TotalWatched from "@/components/Dashboard/LMSCourses/TotalWatched";
+import CurrentCourses from "@/components/Dashboard/LMSCourses/CurrentCourses";
+import Courses from "@/components/Dashboard/LMSCourses/Courses";
+import ActiveCourse from "@/components/Dashboard/LMSCourses/ActiveCourse";
+import CourseCompletion from "@/components/Dashboard/LMSCourses/CourseCompletion";
+import Messages from "@/components/Dashboard/LMSCourses/Messages";
+import TopStudents from "@/components/Dashboard/LMSCourses/TopStudents";
 import PageTitle from "@/components/Common/PageTitle";
-// import { getDictionary } from "./dictionaries";
 
-export default function Home({ params: { lang } }) {
-  // const dict = await getDictionary(lang);
+export default function Page({ params: { lang } }) {
   return (
     <>
       <PageTitle
-        pageTitle="eCommerce"
+        pageTitle="Learning Management Dashboard"
         dashboardUrl={`/${lang}/`}
         dashboardText="Dashboard"
       />
 
+      {/* Features */}
+      <Features />
+
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
         <Grid size={{ sm: 12, sm: 12, md: 12, lg: 12, xl: 8 }}>
-          {/* Features */}
-          <Features />
+          {/* YourProgress */}
+          <YourProgress />
 
-          {/* AudienceOverview */}
-          <AudienceOverview />
+          <Grid
+            container
+            rowSpacing={1}
+            columnSpacing={{ xs: 1, sm: 2, md: 2 }}
+          >
+            <Grid size={{ xs: 12, sm: 12, md: 12, lg: 8 }}>
+              {/* HoursSpent */}
+              <HoursSpent />
 
-          <Grid container columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
-            <Grid size={{ xs: 12, sm: 12, md: 8 }}>
-              {/* VisitsByDay */}
-              <VisitsByDay />
+              {/* TopInstructor */}
+              <TopInstructor />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 12, md: 4 }}>
-              {/* Impressions */}
-              <Impressions />
+            <Grid size={{ xs: 12, sm: 12, md: 12, lg: 4 }}>
+              {/* MyPlanning */}
+              <MyPlanning />
 
-              {/* ActivityTimeline */}
-              <ActivityTimeline />
-            </Grid>
-
-            <Grid size={{ sm: 12, sm: 12, md: 12 }}>
-              {/* RevenuStatus */}
-              <RevenuStatus />
+              {/* TotalWatched */}
+              <TotalWatched />
             </Grid>
           </Grid>
+
+          {/* CurrentCourse */}
+          <CurrentCourses />
+
+          {/* Courses */}
+          <Courses />
         </Grid>
 
         <Grid size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 4 }}>
-          {/* Ratings */}
-          <Ratings />
+          {/* ExperienceIQ */}
+          <ExperienceIQ />
 
-          {/* LiveVisitsOnOurSite */}
-          <LiveVisitsOnOurSite />
+          {/* ActiveCourse */}
+          <ActiveCourse />
 
-          {/* SalesByLocations */}
-          <SalesByCountries />
+          {/* CourseCompletion */}
+          <CourseCompletion />
 
-          {/* NewCustomers */}
-          <NewCustomers />
-        </Grid>
-      </Grid>
+          {/* Messages */}
+          <Messages />
 
-      {/* Recent Orders */}
-      <RecentOrders />
-
-      <Grid
-        container
-        rowSpacing={1}
-        columnSpacing={{ xs: 1, sm: 1, md: 1, lg: 1, xl: 2 }}
-      >
-        <Grid size={{ sm: 12, sm: 12, md: 12, lg: 12, xl: 8 }}>
-          {/* TeamMembersList */}
-          <TeamMembersList />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 4 }}>
-          {/* BestSellingProducts */}
-          <BestSellingProducts />
+          {/* TopStudents */}
+          <TopStudents />
         </Grid>
       </Grid>
     </>

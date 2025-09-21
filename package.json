@@ -24,6 +24,7 @@
     "@mui/x-date-pickers": "^8.11.3",
     "@ramonak/react-progress-bar": "^5.4.0",
     "apexcharts": "^5.3.5",
+    "axios": "^1.12.2",
     "chart.js": "^4.5.0",
     "dayjs": "^1.11.18",
     "eslint": "^9.36.0",

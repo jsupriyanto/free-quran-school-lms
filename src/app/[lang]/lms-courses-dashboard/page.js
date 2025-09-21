@@ -13,12 +13,20 @@ import CourseCompletion from "@/components/Dashboard/LMSCourses/CourseCompletion
 import Messages from "@/components/Dashboard/LMSCourses/Messages";
 import TopStudents from "@/components/Dashboard/LMSCourses/TopStudents";
 import PageTitle from "@/components/Common/PageTitle";
+import authService from "@/services/auth.service";
 
 export default function Page({ params: { lang } }) {
+  const currentUser = authService.getCurrentUser();
+  if (!currentUser) {
+    // Redirect to sign-in page if not authenticated
+    window.location.href = `/${lang}/authentication/sign-in`;
+    return null;
+  }
+  
   return (
     <>
       <PageTitle
-        pageTitle="LMS Courses"
+        pageTitle="Learning Management System"
         dashboardUrl={`/${lang}/`}
         dashboardText="Dashboard"
       />
