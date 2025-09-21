@@ -24,9 +24,9 @@ export const metadata = {
 	description: "Free Quran School is a free online learning management system for Quran education.",
 };
 
-export default function RootLayout({ children, params: { lang } }) {
+export default function RootLayout({ children, lang}) {
 	return (
-		<html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"}>
+		<html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
 			<body>
 				<AppRouterCacheProvider options={{ enableCssLayer: true }}>
 					<ThemeProvider theme={theme}>

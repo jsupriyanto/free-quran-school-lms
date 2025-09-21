@@ -21,6 +21,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import Logout from "@mui/icons-material/Logout";
 import { useParams } from "next/navigation";
 import authService from "@/services/auth.service";
+import { useEffect } from "react";
 
 const Profile = () => {
   const { lang } = useParams();
@@ -36,6 +37,8 @@ const Profile = () => {
 
   let userName = '';
   let userRole = '';
+
+  useEffect(() => {
   const currentUser = authService.getCurrentUser();
   if (currentUser) {
     userName = currentUser.name;
@@ -44,6 +47,8 @@ const Profile = () => {
       .map((role) => role.charAt(0).toUpperCase() + role.slice(1))
       .join(', ');
   } 
+}, []);
+
 
   return (
     <>
