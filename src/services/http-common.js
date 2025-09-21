@@ -5,8 +5,11 @@ const getCurrentUser = () => {
     if (userStr) return JSON.parse(userStr);
     return null;
 }
+let user = null;
+// This will run only once when the component mounts
+if (typeof window !== 'undefined') // Ensure this code runs only on the client side
+    user = getCurrentUser();
 
-const user = getCurrentUser();
 let authorization = "";
 
 if (user && user.accessToken) {

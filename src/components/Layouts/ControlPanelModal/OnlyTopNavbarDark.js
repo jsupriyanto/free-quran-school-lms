@@ -26,12 +26,12 @@ const OnlyTopNavbarDark = () => {
     localStorage.setItem("topNavbarDarkTheme", isDarkMode ? "TopNavbarDark" : "light");
 
     // Update the class on the <html> element to apply the selected mode
-    const htmlElement = document.querySelector(".topNavbarDark");
-    if (isDarkMode) {
-      htmlElement.classList.add("dark");
-    } else {
-      htmlElement.classList.remove("dark");
-    }
+    // const htmlElement = document.querySelector(".topNavbarDark");
+    // if (isDarkMode) {
+    //   htmlElement.classList.add("dark");
+    // } else {
+    //   htmlElement.classList.remove("dark");
+    // }
   }, [isDarkMode]);
 
   return (

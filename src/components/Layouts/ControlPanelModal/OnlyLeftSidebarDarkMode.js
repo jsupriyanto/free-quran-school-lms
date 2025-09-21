@@ -28,12 +28,12 @@ const OnlyLeftSidebarDarkMode = () => {
     );
 
     // Update the class on the <leftSidebarDark> element to apply the selected mode
-    const htmlElement = document.querySelector(".leftSidebarDark");
-    if (isDarkMode) {
-      htmlElement.classList.add("dark");
-    } else {
-      htmlElement.classList.remove("dark");
-    }
+    // const htmlElement = document.querySelector(".leftSidebarDark");
+    // if (isDarkMode) {
+    //   htmlElement?.classList?.add("dark");
+    // } else {
+    //   htmlElement?.classList?.remove("dark");
+    // }
   }, [isDarkMode]);
 
   return (

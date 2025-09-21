@@ -34,7 +34,17 @@ const Profile = () => {
     setAnchorEl(null);
   };
 
+  let userName = '';
+  let userRole = '';
   const currentUser = authService.getCurrentUser();
+  if (currentUser) {
+    userName = currentUser.name;
+    userRole = currentUser.roles
+      .map((role) => role.replace('ROLE_', '').toLowerCase())
+      .map((role) => role.charAt(0).toUpperCase() + role.slice(1))
+      .join(', ');
+  } 
+
   return (
     <>
       <Tooltip title="Account settings">
@@ -49,7 +59,7 @@ const Profile = () => {
         >
           <Avatar
             src="/images/user1.png"
-            alt={currentUser.name}
+            alt={userName}
             sx={{ width: 40, height: 40 }}
           />
         </IconButton>
@@ -97,10 +107,7 @@ const Profile = () => {
           <Avatar src="/images/user1.png" className="mr-1" />
           <Box>
             <Typography sx={{ fontSize: "11px", color: "#757FEF" }}>
-              {currentUser.roles
-                .map((role) => role.replace('ROLE_', '').toLowerCase())
-                .map((role) => role.charAt(0).toUpperCase() + role.slice(1))
-                .join(', ')}
+              {userRole}
             </Typography>
             <Typography
               sx={{
@@ -109,7 +116,7 @@ const Profile = () => {
                 fontWeight: "500",
               }}
             >
-              {currentUser.name}
+              {userName}
             </Typography>
           </Box>
         </MenuItem>
@@ -182,7 +189,7 @@ const Profile = () => {
           <Link
             href="#"
             onClick={() => {
-              authService.logout();
+              authService.signout();
               window.location.href = `/${lang}/authentication/sign-in`;
             }}
             fontSize="13px"

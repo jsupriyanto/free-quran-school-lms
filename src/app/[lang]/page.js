@@ -1,3 +1,4 @@
+"use client";
 import Grid from "@mui/material/Grid";
 import Features from "@/components/Dashboard/LMSCourses/Features";
 import YourProgress from "@/components/Dashboard/LMSCourses/YourProgress";
@@ -14,12 +15,13 @@ import Messages from "@/components/Dashboard/LMSCourses/Messages";
 import TopStudents from "@/components/Dashboard/LMSCourses/TopStudents";
 import PageTitle from "@/components/Common/PageTitle";
 
-export default function Page({ params: { lang } }) {
+export default function Page({ lang }) {
+  const currentLanguage = lang || 'en';
   return (
-    <>
+    <>  
       <PageTitle
         pageTitle="Learning Management Dashboard"
-        dashboardUrl={`/${lang}/`}
+        dashboardUrl={`/${currentLanguage}/`}
         dashboardText="Dashboard"
       />
 

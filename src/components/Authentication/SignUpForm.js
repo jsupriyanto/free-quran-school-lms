@@ -11,15 +11,25 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import styles from "@/components/Authentication/Authentication.module.css";
 import Image from "next/image";
+import authService from "@/services/auth.service";
 
 const SignUpForm = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    authService.signup(
+      data.get("firstName"),
+      data.get("lastName"),
+      data.get("email"),
+      data.get("password")
+    )
+      .then(response => {
+        alert("Registration successful! Please sign in.");
+        window.location.href = '/en/authentication/sign-in';
+      })
+      .catch(error => {
+        console.error("Registration failed:", error);
+      });
   };
 
   return (
@@ -66,12 +76,12 @@ const SignUpForm = () => {
                 }}
               >
                 <Link href="#" className={styles.googleBtn}>
-                  <Image src="/images/google-icon.png" width={20} height={20} />{" "}
+                  <Image src="/images/google-icon.png" alt="Google" width={20} height={20} />{" "}
                   Sign in with Google
                 </Link>
 
                 <Link href="#" className={styles.fbBtn}>
-                  <Image src="/images/fb-icon.png" width={20} height={20} />{" "}
+                  <Image src="/images/fb-icon.png" alt="Facebook" width={20} height={20} />{" "}
                   Sign in with Facebook
                 </Link>
               </Box>
