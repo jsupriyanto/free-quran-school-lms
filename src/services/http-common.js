@@ -16,10 +16,26 @@ if (user && user.accessToken) {
      authorization = "Bearer " + user.accessToken;
 }
 
-export default axios.create({
+const http = axios.create({
     baseURL: "https://free-quran-school-api.vercel.app/api/",
     headers: {
         "Content-type": "application/json",
         "Authorization": authorization
     }
 });
+
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.log('HTTP error response:', error.response);
+    const { status } = error.response;
+    if (status === 401 || status === 403) {
+      // Clear authentication data and redirect to login
+      localStorage.removeItem('user');
+      window.location.href = '/authentication/sign-in';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default http;

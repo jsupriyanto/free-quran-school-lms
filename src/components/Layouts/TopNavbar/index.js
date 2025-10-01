@@ -41,7 +41,7 @@ const TopNavbar = ({ toogleActive }) => {
           <Typography component="div" sx={{ flexGrow: 1 }}></Typography>
 
           <Stack direction="row" spacing={2}>
-            {/* CurrentDate */}
+            
             <CurrentDate />
 
             {/* Notification */}

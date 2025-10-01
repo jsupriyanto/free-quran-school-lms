@@ -19,6 +19,10 @@ class CourseDataService {
   delete(id) {
     return http.delete(`/course/${id}`);
   }
+
+  getCourseStats() {
+    return http.get("/course/dashboard/stats");
+  }
 }
 
 export default new CourseDataService();

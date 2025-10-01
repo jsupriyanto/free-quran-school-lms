@@ -20,6 +20,14 @@ class TeacherDataService {
   delete(id) {
     return http.delete(`/teacher/${id}`);
   }
+
+  getTeacherCount() {
+    return http.get("/teacher/dashboard/count");
+  }
+
+  getTop5Teachers() {
+    return http.get("/teacher/dashboard/top5");
+  }
 }
 
 export default new TeacherDataService();

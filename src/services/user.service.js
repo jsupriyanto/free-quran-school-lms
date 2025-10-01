@@ -18,11 +18,11 @@ class UserDataService {
   }
 
   getTop5Students() {
-    return http.get("/user/top5");
+    return http.get("/user/dashboard/top5");
   }
 
   getRandomStudent() {
-    return http.get("/user/random");
+    return http.get("/user/dashboard/random");
   }
 
   get(id) {
@@ -34,7 +34,7 @@ class UserDataService {
   }
 
   getUserCount() {
-    return http.get("/user/count");
+    return http.get("/user/dashboard/count");
   }
 }
 

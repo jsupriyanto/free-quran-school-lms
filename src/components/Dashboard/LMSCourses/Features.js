@@ -1,40 +1,81 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Image from "next/image";
-
-const FeaturesData = [
-  {
-    id: "1",
-    title: "120",
-    subTitle: "Enrolled Courses",
-    image: "/images/icon1.png",
-  },
-  {
-    id: "2",
-    title: "17",
-    subTitle: "Active Courses",
-    image: "/images/icon2.png",
-  },
-  {
-    id: "3",
-    title: "64",
-    subTitle: "Completed Courses",
-    image: "/images/icon3.png",
-  },
-  {
-    id: "4",
-    title: "2.1M",
-    subTitle: "Total Students",
-    image: "/images/icon4.png",
-  },
-];
+import courseService from "@/services/course.service";
+import userService from "@/services/user.service";
+import enrollmentService from "@/services/enrollment.service";
+import { LinearProgress } from "@mui/material";
 
 const Features = () => {
+
+  let enrolledCourses = {
+    id: "1",
+    title: "",
+    subTitle: "Enrolled Courses",
+    image: "/images/icon1.png",
+  }
+
+  let completedEnrollments = {
+    id: "2",
+    title: "",
+    subTitle: "Completed Enrollments",
+    image: "/images/icon3.png",
+  }
+
+  let activeCourses = {
+    id: "3",
+    title: "",
+    subTitle: "Active Courses",
+    image: "/images/icon2.png",
+  };
+  
+  let totalStudents = {
+    id: "4",
+    title: "",
+    subTitle: "Total Students",
+    image: "/images/icon4.png",
+  };
+
+  
+  let [enrolledCourse, setEnrolledCourses] = React.useState(enrolledCourses);
+  let [completedEnrollment, setCompletedEnrollments] = React.useState(completedEnrollments);
+  let [activeCourse, setActiveCourses] = React.useState(activeCourses);
+  let [totalStudent, setTotalStudents] = React.useState(totalStudents);
+
+  let FeaturesData = [
+    enrolledCourse,
+    activeCourse,
+    totalStudent,
+    completedEnrollment,
+  ];
+
+  const refreshData = () => {
+    courseService.getCourseStats().then((response) => {
+      activeCourses.title = response.data.publishedCourses;
+      setActiveCourses({ ...activeCourses });
+    });
+
+    userService.getUserCount().then((response) => {
+      totalStudents.title = response.data.count;
+      setTotalStudents({ ...totalStudents });
+    });
+    enrollmentService.getEnrollmentStats().then((response) => {
+      enrolledCourses.title = response.data.totalEnrollments;
+      completedEnrollments.title = response.data.completedEnrollments;
+      setEnrolledCourses({ ...enrolledCourses });
+      setCompletedEnrollments({ ...completedEnrollments });
+    });
+  }
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+
   return (
     <>
       <Grid
@@ -80,7 +121,10 @@ const Features = () => {
                     variant="h1"
                     sx={{ fontSize: 28, fontWeight: 700, mb: "5px" }}
                   >
-                    {feature.title}
+                    {feature.title !== '' ? 
+                    feature.title : 
+                    <LinearProgress value={null} />
+                    }
                   </Typography>
 
                   <Typography variant="p" sx={{ fontSize: 14 }}>

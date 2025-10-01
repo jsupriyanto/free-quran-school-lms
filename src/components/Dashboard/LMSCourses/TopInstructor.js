@@ -1,61 +1,32 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Box } from "@mui/material";
 import Card from "@mui/material/Card";
 import { Typography } from "@mui/material";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import Image from "next/image";
-
-const TopInstructorData = [
-  {
-    id: "1",
-    image: "/images/user9.png",
-    name: "Melanie Grutt",
-    userName: "@melgrutt",
-  },
-  {
-    id: "2",
-    image: "/images/user10.png",
-    name: "Theron Trump",
-    userName: "@therontrump",
-  },
-  {
-    id: "3",
-    image: "/images/user11.png",
-    name: "Johen Mark",
-    userName: "@johenmark",
-  },
-  {
-    id: "4",
-    image: "/images/user12.png",
-    name: "Nicholas Tanner",
-    userName: "@nilyeager",
-  },
-  {
-    id: "5",
-    image: "/images/user13.png",
-    name: "Tyler Mark",
-    userName: "@tylemark",
-  },
-  {
-    id: "6",
-    image: "/images/user14.png",
-    name: "Martina Albart",
-    userName: "@martina",
-  },
-];
+import teacherService from "@/services/teacher.service";
 
 const TopInstructor = () => {
+  const [instructorData, setInstructorData] = React.useState([]);
   // Select Form
   const [select, setSelect] = React.useState("");
   const handleChange = (event) => {
     setSelect(event.target.value);
+  };
+
+  useEffect(() => {
+    fetchTopInstructors();
+  }, []);
+
+  const fetchTopInstructors = () => {
+    teacherService.getTop5Teachers().then((res) => {
+      setInstructorData(res.data);
+    }).catch(err => {
+      console.log(err);
+    });
   };
 
   return (
@@ -86,44 +57,12 @@ const TopInstructor = () => {
               fontWeight: 500,
             }}
           >
-            Top Instructor
+            Top Teachers
           </Typography>
-          <Box>
-            <FormControl sx={{ minWidth: 120 }} size="small">
-              <InputLabel id="demo-select-small" sx={{ fontSize: "14px" }}>
-                Select
-              </InputLabel>
-              <Select
-                labelId="demo-select-small"
-                id="demo-select-small"
-                value={select}
-                label="Select"
-                onChange={handleChange}
-                sx={{ fontSize: "14px" }}
-                className="select"
-              >
-                <MenuItem value={0} sx={{ fontSize: "14px" }}>
-                  Today
-                </MenuItem>
-                <MenuItem value={1} sx={{ fontSize: "14px" }}>
-                  This Week
-                </MenuItem>
-                <MenuItem value={2} sx={{ fontSize: "14px" }}>
-                  Last Month
-                </MenuItem>
-                <MenuItem value={3} sx={{ fontSize: "14px" }}>
-                  Last 12 Months
-                </MenuItem>
-                <MenuItem value={4} sx={{ fontSize: "14px" }}>
-                  All Time
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
         </Box>
 
         <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
-          {TopInstructorData.map((instructor) => (
+          {instructorData.map((instructor) => (
             <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }} key={instructor.id}>
               <Box
                 sx={{
@@ -144,7 +83,7 @@ const TopInstructor = () => {
                   }}
                 >
                   <Image
-                    src={instructor.image}
+                    src={instructor.photoUrl || `/images/user${instructor.id}.png`}
                     alt="Image"
                     width={45}
                     height={45}
@@ -156,7 +95,11 @@ const TopInstructor = () => {
                       {instructor.name}
                     </Typography>
                     <Typography color="#A9A9C8;" fontSize="12px">
-                      {instructor.userName}
+                      {instructor.twitterUrl && (
+                        <a href={instructor.twitterUrl} target="_blank" rel="noopener noreferrer">
+                          {instructor.twitterUrl}
+                        </a>
+                      )}
                     </Typography>
                   </Box>
                 </Box>

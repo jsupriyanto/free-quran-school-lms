@@ -36,6 +36,7 @@ const style = {
 };
 
 const Calendar = ({ params: { lang } }) => {
+  const currentLanguage = lang || 'en';
   // Add event modal
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
@@ -61,7 +62,7 @@ const Calendar = ({ params: { lang } }) => {
     <>
       <PageTitle
         pageTitle="Calendar"
-        dashboardUrl={`/${lang}/`}
+        dashboardUrl={`/${currentLanguage}/`}
         dashboardText="Dashboard"
       />
 

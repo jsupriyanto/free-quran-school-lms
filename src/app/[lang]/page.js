@@ -18,7 +18,7 @@ import PageTitle from "@/components/Common/PageTitle";
 export default function Page({ lang }) {
   const currentLanguage = lang || 'en';
   return (
-    <>  
+    <>
       <PageTitle
         pageTitle="Learning Management Dashboard"
         dashboardUrl={`/${currentLanguage}/`}
@@ -33,52 +33,27 @@ export default function Page({ lang }) {
           {/* YourProgress */}
           <YourProgress />
 
-          <Grid
-            container
-            rowSpacing={1}
-            columnSpacing={{ xs: 1, sm: 2, md: 2 }}
-          >
-            <Grid size={{ xs: 12, sm: 12, md: 12, lg: 8 }}>
-              {/* HoursSpent */}
-              <HoursSpent />
-
-              {/* TopInstructor */}
-              <TopInstructor />
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 12, md: 12, lg: 4 }}>
-              {/* MyPlanning */}
-              <MyPlanning />
-
-              {/* TotalWatched */}
-              <TotalWatched />
-            </Grid>
-          </Grid>
-
-          {/* CurrentCourse */}
-          <CurrentCourses />
-
-          {/* Courses */}
           <Courses />
         </Grid>
 
         <Grid size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 4 }}>
-          {/* ExperienceIQ */}
-          <ExperienceIQ />
+            {/* TopInstructor */}
+            <TopInstructor />
 
-          {/* ActiveCourse */}
-          <ActiveCourse />
+            <TopStudents />
 
-          {/* CourseCompletion */}
-          <CourseCompletion />
-
-          {/* Messages */}
-          <Messages />
-
-          {/* TopStudents */}
-          <TopStudents />
+            <CurrentCourses />
         </Grid>
-      </Grid>
-    </>
-  );
+
+        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
+            {/* CurrentCourse */}
+            
+
+            {/* Courses */}
+
+          </Grid>
+        </Grid>
+
+      </>
+      );  
 }

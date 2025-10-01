@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useState } from "react";
 import { Box } from "@mui/material";
 import Card from "@mui/material/Card";
 import { Typography } from "@mui/material";
@@ -19,45 +20,11 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-const data = [
-  {
-    name: "01 Jan",
-    Practice: 15,
-    Theory: 10,
-  },
-  {
-    name: "02 Jan",
-    Practice: 11,
-    Theory: 16,
-  },
-  {
-    name: "03 Jan",
-    Practice: 17,
-    Theory: 12,
-  },
-  {
-    name: "04 Jan",
-    Practice: 13,
-    Theory: 18,
-  },
-  {
-    name: "05 Jan",
-    Practice: 19,
-    Theory: 14,
-  },
-  {
-    name: "06 Jan",
-    Practice: 15,
-    Theory: 20,
-  },
-  {
-    name: "07 Jan",
-    Practice: 16,
-    Theory: 22,
-  },
-];
+import enrollmentService from "@/services/enrollment.service";
 
 const YourProgress = () => {
+  const [data, selectData] = useState([]);
+
   const originalConsoleError = console.error;
   console.error = (message, ...args) => {
     if (
@@ -74,6 +41,12 @@ const YourProgress = () => {
   const handleChange = (event) => {
     setSelect(event.target.value);
   };
+
+  useEffect(() => {
+    enrollmentService.getEnrollmentProgress().then((res) => {
+      selectData(res.data);
+    });
+  }, []);
 
   return (
     <>
@@ -103,45 +76,25 @@ const YourProgress = () => {
               fontWeight: 500,
             }}
           >
-            Your Progress
+            Enrollment Progress
           </Typography>
-          <Box>
-            <FormControl sx={{ minWidth: 120 }} size="small">
-              <InputLabel id="demo-select-small" sx={{ fontSize: '14px' }}>Select</InputLabel>
-              <Select
-                labelId="demo-select-small"
-                id="demo-select-small"
-                value={select}
-                label="Select"
-                onChange={handleChange}
-                sx={{ fontSize: '14px' }}
-                className="select"
-              >
-                <MenuItem value={0} sx={{ fontSize: '14px' }}>Today</MenuItem>
-                <MenuItem value={1} sx={{ fontSize: '14px' }}>This Week</MenuItem>
-                <MenuItem value={2} sx={{ fontSize: '14px' }}>Last Month</MenuItem>
-                <MenuItem value={3} sx={{ fontSize: '14px' }}>Last 12 Months</MenuItem>
-                <MenuItem value={4} sx={{ fontSize: '14px' }}>All Time</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
         </Box>
  
         <ResponsiveContainer width="100%" height={490}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#EDEFF5" />
-            <XAxis dataKey="name" padding={{ left: 30, right: 30 }} stroke="#A9A9C8" fontSize={14}  />
-            <YAxis unit=" Hr" stroke="#A9A9C8" fontSize={14} />
+            <XAxis dataKey="month" padding={{ left: 30, right: 30 }} stroke="#A9A9C8" fontSize={14}  />
+            <YAxis unit="" stroke="#A9A9C8" fontSize={14} />
             <Tooltip />
             <Legend />
             <Line
               type="monotone"
-              dataKey="Theory"
+              dataKey="thisYear"
               stroke="#757FEF"
               activeDot={{ r: 8 }}
-              unit=" Hours" 
+              unit="" 
             />
-            <Line type="monotone" dataKey="Practice" stroke="#2DB6F5" unit=" Hours" />
+            <Line type="monotone" dataKey="lastYear" stroke="#2DB6F5" unit=" Hours" />
           </LineChart>
         </ResponsiveContainer>
       </Card>

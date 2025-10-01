@@ -1,5 +1,5 @@
 "use client";
-
+import { useEffect } from "react";
 import * as React from "react";
 import { Box, Typography } from "@mui/material";
 import Card from "@mui/material/Card";
@@ -26,6 +26,8 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import ClearIcon from "@mui/icons-material/Clear";
 import Checkbox from "@mui/material/Checkbox";
 import PageTitle from "@/components/Common/PageTitle";
@@ -33,6 +35,9 @@ import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import CloseIcon from "@mui/icons-material/Close";
+import authService from "@/services/auth.service";
+import teacherService from "@/services/teacher.service";
+
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
@@ -145,172 +150,18 @@ TeachersLists.propTypes = {
   rowsPerPage: PropTypes.number.isRequired,
 };
 
-function createData(name, image, userName, email, tags, projects) {
-  return {
-    name,
-    image,
-    userName,
-    email,
-    tags,
-    projects,
-  };
-}
+const currentUser = authService.getCurrentUser();
 
-const rows = [
-  createData(
-    "Evangelina Mcclain",
-    "/images/user1.png",
-    "@jstevenson5c",
-    "jordansteve@gmail.com",
-    "HTML, CSS & JS",
-    "165"
-  ),
-  createData(
-    "Candice Munoz",
-    "/images/user2.png",
-    "@candice3unoz",
-    "candicemunoz@gmail.com",
-    "React, Next.js",
-    "120"
-  ),
-  createData(
-    "Mike Mcclain",
-    "/images/user3.png",
-    "@mike4mcclain",
-    "mikemcclain@gmail.com",
-    "Angular, Gatsby",
-    "220"
-  ),
-  createData(
-    "Bernard Langley",
-    "/images/user4.png",
-    "@bernardlangley",
-    "bernardlangley@gmail.com",
-    "HTML, React & Sass",
-    "122"
-  ),
-  createData(
-    "Kristie Hall",
-    "/images/user5.png",
-    "@kristie7hall",
-    "kristiehall@gmail.com",
-    "React, Next.js & Sass",
-    "360"
-  ),
-  createData(
-    "Bolton Obrien",
-    "/images/user6.png",
-    "@bolton4obrien",
-    "boltonobrien@gmail.com",
-    "Angular, HTML & Sass",
-    "250"
-  ),
-  createData(
-    "Dee Alvarado",
-    "/images/user7.png",
-    "@dee3alvarado",
-    "deealvarado@gmail.com",
-    "React, Next.js & Sass",
-    "140"
-  ),
-  createData(
-    "Cervantes Kramer",
-    "/images/user8.png",
-    "@cervantes4kramer",
-    "cervantes4kramer@gmail.com",
-    "Gatsby, React & Sass",
-    "345"
-  ),
-  createData(
-    "Dejesus Michael",
-    "/images/user9.png",
-    "@dejesus1michael",
-    "dejesusmichael@gmail.com",
-    "React, Gatsby & Sass",
-    "323"
-  ),
-  createData(
-    "Alissa Nelson",
-    "/images/user10.png",
-    "@alissa1nelson",
-    "alissa1nelson@gmail.com",
-    "React, Gatsby & Sass",
-    "451"
-  ),
-  createData(
-    "Milton",
-    "/images/user11.png",
-    "@milton",
-    "milton@gmail.com",
-    "React, HTML & Sass",
-    "432"
-  ),
-  createData(
-    "Claude",
-    "/images/user12.png",
-    "@claude",
-    "claude@gmail.com",
-    "React, Gatsby & Sass",
-    "543"
-  ),
-  createData(
-    "Joshua",
-    "/images/user13.png",
-    "@joshua",
-    "joshua@gmail.com",
-    "React, Gatsby & Sass",
-    "543"
-  ),
-  createData(
-    "Harvey",
-    "/images/user14.png",
-    "@harvey",
-    "harvey@gmail.com",
-    "React, Gatsby & Sass",
-    "432"
-  ),
-  createData(
-    "Antonio",
-    "/images/user15.png",
-    "@antonio",
-    "antonio@gmail.com",
-    "React, Gatsby & Sass",
-    "765"
-  ),
-  createData(
-    "Julian",
-    "/images/user16.png",
-    "@julian",
-    "julian@gmail.com",
-    "React, Gatsby & Sass",
-    "678"
-  ),
-  createData(
-    "Harold",
-    "/images/user17.png",
-    "@harold",
-    "harold@gmail.com",
-    "React, Gatsby & Sass",
-    "165"
-  ),
-  createData(
-    "Kingston",
-    "/images/user18.png",
-    "@kingston",
-    "kingston@info.com",
-    "React, Gatsby & Sass",
-    "165"
-  ),
-].sort((a, b) => (a.name < b.name ? -1 : 1));
-
-export default function TeachersList({ params: { lang } }) {
+export default function TeachersList({ lang }) {
+  const language = lang || "en";
   // Table
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [teachers, setTeachers] = React.useState([]);
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - teachers.length) : 0;
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -323,6 +174,8 @@ export default function TeachersList({ params: { lang } }) {
 
   // Create new teacher modal
   const [open, setOpen] = React.useState(false);
+  const [selectedTeacher, setSelectedTeacher] = React.useState(null);
+
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -331,21 +184,81 @@ export default function TeachersList({ params: { lang } }) {
     setOpen(false);
   };
 
+  const handleEditOpen = (teacher) => {
+    setSelectedTeacher(teacher);
+    setOpen(true);
+  }
+
+  const handleDeleteConfirmation = (row) => {
+    if (row.id !== currentUser.id) {
+      confirm("Are you sure to delete this teacher?") && teacherService.delete(row.id).then(() => {
+        handleRefresh();
+      });
+    } else {
+      alert("You can't delete your own account.");
+    }
+  };
+
+  const handleRefresh = () => {
+    teacherService.getAll().then((response) => {
+      setTeachers(response.data);
+    });
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
+    let updatedTeacher = {};
+    let newTeacher = {};  
+
+    if (selectedTeacher) {
+      // Update existing teacher
+      updatedTeacher = {
+        name: data.get("name"),
+        bio: data.get("bio"),
+        photoUrl: data.get("photoUrl") ? URL.createObjectURL(data.get("photoUrl")) : selectedTeacher.photoUrl,
+        facebookUrl: data.get("facebookUrl"),
+        instagramUrl: data.get("instagramUrl"),
+        twitterUrl: data.get("twitterUrl"),
+        linkedInUrl: data.get("linkedInUrl"),
+        youtubeUrl: data.get("youtubeUrl"),
+        pinterestUrl: data.get("pinterestUrl"),
+      };
+    } else {
+      // Create new teacher
+      newTeacher = {
+        name: data.get("name"),
+        bio: data.get("bio"),
+        photoUrl: data.get("photoUrl") ? URL.createObjectURL(data.get("photoUrl")) : "/images/user.png",
+        facebookUrl: data.get("facebookUrl"),
+        instagramUrl: data.get("instagramUrl"),
+        twitterUrl: data.get("twitterUrl"),
+        linkedInUrl: data.get("linkedInUrl"),
+        youtubeUrl: data.get("youtubeUrl"),
+        pinterestUrl: data.get("pinterestUrl"),
+      };
+    }
+    const teacherData = selectedTeacher ? { ...selectedTeacher, ...updatedTeacher } : newTeacher;
+    const serviceCall = selectedTeacher ? teacherService.update(selectedTeacher.id, teacherData) : teacherService.create(teacherData);
+    serviceCall.then(() => {
+      handleRefresh();
+      handleClose();
+      setSelectedTeacher(null);
     });
   };
-  // End Add Task Modal
+  // End Add Teacher 
+  
+  useEffect(() => {
+    teacherService.getAll().then((response) => {
+      setTeachers(response.data);
+    });
+  }, []);
 
   return (
     <>
       <PageTitle
-        pageTitle="Teachers List"
-        dashboardUrl={`/${lang}/`}
+        pageTitle="Manage Teachers"
+        dashboardUrl={`/${language}/`}
         dashboardText="Dashboard"
       />
 
@@ -368,7 +281,7 @@ export default function TeachersList({ params: { lang } }) {
           }}
           className="for-dark-bottom-border"
         >
-          
+
           <Button
             onClick={handleClickOpen}
             variant="contained"
@@ -386,6 +299,25 @@ export default function TeachersList({ params: { lang } }) {
               className="mr-5px"
             />{" "}
             Create New Teacher
+          </Button>
+
+          <Button
+            onClick={handleRefresh}
+            variant="contained"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "8px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "12px 20px",
+              color: "#fff !important",
+            }}
+          >
+            <RefreshIcon
+              sx={{ position: "relative", top: "-1px" }}
+              className="mr-5px"
+            />{" "}
+            Refresh
           </Button>
         </Box>
 
@@ -412,21 +344,42 @@ export default function TeachersList({ params: { lang } }) {
                   align="center"
                   sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
                 >
-                  Email
+                  Bio
                 </TableCell>
 
                 <TableCell
                   align="center"
                   sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
                 >
-                  Tags
+                  Facebook
                 </TableCell>
 
                 <TableCell
                   align="center"
                   sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
                 >
-                  Projects
+                  Instagram
+                </TableCell>
+
+                <TableCell
+                  align="center"
+                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                >
+                  Twitter/X
+                </TableCell>
+
+                <TableCell
+                  align="center"
+                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                >
+                  LinkedIn
+                </TableCell>
+
+                <TableCell
+                  align="center"
+                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                >
+                  YouTube
                 </TableCell>
 
                 <TableCell
@@ -440,13 +393,13 @@ export default function TeachersList({ params: { lang } }) {
 
             <TableBody>
               {(rowsPerPage > 0
-                ? rows.slice(
-                    page * rowsPerPage,
-                    page * rowsPerPage + rowsPerPage
-                  )
-                : rows
+                ? teachers.slice(
+                  page * rowsPerPage,
+                  page * rowsPerPage + rowsPerPage
+                )
+                : teachers
               ).map((row) => (
-                <TableRow key={row.name}>
+                <TableRow key={row.id}>
                   <TableCell
                     style={{
                       borderBottom: "1px solid #F7FAFF",
@@ -465,8 +418,8 @@ export default function TeachersList({ params: { lang } }) {
                       className="ml-10px"
                     >
                       <img
-                        src={row.image}
-                        alt="User"
+                        src={row.photoUrl || `/images/user${row.id}.png`}
+                        alt="Teacher Photo"
                         width={40}
                         height={40}
                         className="borRadius100"
@@ -482,16 +435,6 @@ export default function TeachersList({ params: { lang } }) {
                         >
                           {row.name}
                         </Typography>
-
-                        <Typography
-                          sx={{
-                            fontSize: "12px",
-                            color: "#A9A9C8",
-                          }}
-                          className="ml-10px"
-                        >
-                          {row.userName}
-                        </Typography>
                       </Box>
                     </Box>
                   </TableCell>
@@ -505,7 +448,7 @@ export default function TeachersList({ params: { lang } }) {
                       paddingBottom: "13px",
                     }}
                   >
-                    {row.email}
+                    {row.bio}
                   </TableCell>
 
                   <TableCell
@@ -517,7 +460,7 @@ export default function TeachersList({ params: { lang } }) {
                       paddingBottom: "13px",
                     }}
                   >
-                    {row.tags}
+                    {row.facebookUrl}
                   </TableCell>
 
                   <TableCell
@@ -529,7 +472,43 @@ export default function TeachersList({ params: { lang } }) {
                       paddingBottom: "13px",
                     }}
                   >
-                    {row.projects}
+                    {row.instagramUrl}
+                  </TableCell>
+
+                  <TableCell
+                    align="center"
+                    style={{
+                      borderBottom: "1px solid #F7FAFF",
+                      fontSize: "13px",
+                      paddingTop: "13px",
+                      paddingBottom: "13px",
+                    }}
+                  >
+                    {row.twitterUrl}
+                  </TableCell>
+
+                  <TableCell
+                    align="center"
+                    style={{
+                      borderBottom: "1px solid #F7FAFF",
+                      fontSize: "13px",
+                      paddingTop: "13px",
+                      paddingBottom: "13px",
+                    }}
+                  >
+                    {row.linkedInUrl}
+                  </TableCell>
+
+                  <TableCell
+                    align="center"
+                    style={{
+                      borderBottom: "1px solid #F7FAFF",
+                      fontSize: "13px",
+                      paddingTop: "13px",
+                      paddingBottom: "13px",
+                    }}
+                  >
+                    {row.youtubeUrl}
                   </TableCell>
 
                   <TableCell
@@ -547,17 +526,19 @@ export default function TeachersList({ params: { lang } }) {
                           size="small"
                           color="danger"
                           className="danger"
+                          onClick={() => handleDeleteConfirmation(row)}
                         >
                           <DeleteIcon fontSize="inherit" />
                         </IconButton>
                       </Tooltip>
 
-                      <Tooltip title="Rename" placement="top">
+                      <Tooltip title="Edit" placement="top">
                         <IconButton
-                          aria-label="rename"
+                          aria-label="edit  "
                           size="small"
                           color="primary"
                           className="primary"
+                          onClick={() => handleEditOpen(row)}
                         >
                           <DriveFileRenameOutlineIcon fontSize="inherit" />
                         </IconButton>
@@ -582,7 +563,7 @@ export default function TeachersList({ params: { lang } }) {
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                   colSpan={8}
-                  count={rows.length}
+                  count={teachers.length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   SelectProps={{
@@ -629,7 +610,7 @@ export default function TeachersList({ params: { lang } }) {
                 fontSize: "18px",
               }}
             >
-              Create New Teacher
+            {selectedTeacher ? 'Edit Teacher' : 'Add New Teacher'}
             </Typography>
 
             <IconButton
@@ -661,17 +642,18 @@ export default function TeachersList({ params: { lang } }) {
                       mb: "12px",
                     }}
                   >
-                    Image
+                    Photo
                   </Typography>
 
                   <TextField
-                    autoComplete="image"
-                    name="image"
+                    autoComplete="photo"
+                    name="photoUrl"
                     required
                     fullWidth
-                    id="image"
+                    id="photo"
                     type="file"
                     autoFocus
+                    value={selectedTeacher?.photoUrl || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -698,6 +680,7 @@ export default function TeachersList({ params: { lang } }) {
                     id="name"
                     label="Name"
                     autoFocus
+                    value={selectedTeacher?.name || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -713,17 +696,17 @@ export default function TeachersList({ params: { lang } }) {
                       mb: "12px",
                     }}
                   >
-                    User Name
+                    Facebook
                   </Typography>
 
                   <TextField
-                    autoComplete="user-name"
-                    name="userName"
-                    required
+                    autoComplete="facebook"
+                    name="facebookUrl"
                     fullWidth
-                    id="userName"
-                    label="User Name"
+                    id="facebook"
+                    label="Facebook URL"
                     autoFocus
+                    value={selectedTeacher?.facebookUrl || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -739,17 +722,17 @@ export default function TeachersList({ params: { lang } }) {
                       mb: "12px",
                     }}
                   >
-                    Email
+                    Instagram
                   </Typography>
 
                   <TextField
-                    autoComplete="email"
-                    name="email"
-                    required
+                    autoComplete="instagram"
+                    name="instagramUrl"
                     fullWidth
-                    id="email"
-                    label="example@info.com"
+                    id="instagram"
+                    label="Instagram URL"
                     autoFocus
+                    value={selectedTeacher?.instagramUrl || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -765,17 +748,17 @@ export default function TeachersList({ params: { lang } }) {
                       mb: "12px",
                     }}
                   >
-                    Tags
+                    Twitter/X
                   </Typography>
 
                   <TextField
-                    autoComplete="tags"
-                    name="tags"
-                    required
+                    autoComplete="twitter"
+                    name="twitterUrl"
                     fullWidth
-                    id="tags"
-                    label="Tags"
+                    id="twitter"
+                    label="Twitter/X URL"
                     autoFocus
+                    value={selectedTeacher?.twitterUrl || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -791,17 +774,96 @@ export default function TeachersList({ params: { lang } }) {
                       mb: "12px",
                     }}
                   >
-                    Projects
+                    LinkedIn
                   </Typography>
 
                   <TextField
-                    autoComplete="projects"
-                    name="projects"
+                    autoComplete="linkedin"
+                    name="linkedinUrl"
+                    fullWidth
+                    id="linkedin"
+                    label="LinkedIn URL"
+                    autoFocus 
+                    value={selectedTeacher?.linkedinUrl || ""}
+                    InputProps={{
+                      style: { borderRadius: 8 },
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+                  <Typography
+                    as="h5"
+                    sx={{
+                      fontWeight: "500",
+                      fontSize: "14px",
+                      mb: "12px",
+                    }}
+                  >
+                    YouTube
+                  </Typography>
+
+                  <TextField
+                    autoComplete="youtube"
+                    name="youtubeUrl"
+                    fullWidth
+                    id="youtube"
+                    label="YouTube URL"
+                    autoFocus
+                    value={selectedTeacher?.youtubeUrl || ""}
+                    InputProps={{
+                      style: { borderRadius: 8 },
+                    }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+                  <Typography
+                    as="h5"
+                    sx={{
+                      fontWeight: "500",
+                      fontSize: "14px",
+                      mb: "12px",
+                    }}
+                  >
+                    Pinterest
+                  </Typography>
+
+                  <TextField
+                    autoComplete="pinterest"
+                    name="pinterestUrl"
+                    fullWidth
+                    id="pinterest"
+                    label="Pinterest URL"
+                    autoFocus
+                    value={selectedTeacher?.pinterestUrl || ""}
+                    InputProps={{
+                      style: { borderRadius: 8 },
+                    }}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
+                  <Typography
+                    as="h5"
+                    sx={{
+                      fontWeight: "500",
+                      fontSize: "14px",
+                      mb: "12px",
+                    }}
+                  >
+                    Bio
+                  </Typography>
+
+                  <TextField
+                    autoComplete="bio "
+                    name="bio"
                     required
                     fullWidth
-                    id="projects"
-                    label="Example 5"
+                    id="bio"
+                    label="Bio"
                     autoFocus
+                    multiline
+                    rows={6}
+                    value={selectedTeacher?.bio || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -847,14 +909,28 @@ export default function TeachersList({ params: { lang } }) {
                       color: "#fff !important",
                     }}
                   >
-                    <AddIcon
-                      sx={{
-                        position: "relative",
-                        top: "-2px",
-                      }}
-                      className="mr-3px"
-                    />{" "}
-                    Create New User
+                    {!selectedTeacher && (
+                      <AddIcon
+                        sx={{
+                          position: "relative",
+                          top: "-2px",
+                        }}
+                        className="mr-3px"
+                      />
+                    )}
+
+                    {selectedTeacher && (
+                      <EditIcon
+                        sx={{
+                          position: "relative",
+                          top: "-2px",
+                        }}
+                        className="mr-3px"
+                      />
+                    )}
+
+                    {" "}
+                    {selectedTeacher ? 'Update Teacher' : 'Create Teacher'}
                   </Button>
                 </Grid>
               </Grid>
