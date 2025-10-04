@@ -92,7 +92,7 @@ const TopInstructor = () => {
 
                   <Box className="ml-1">
                     <Typography as="h4" fontWeight={500} fontSize="13px">
-                      {instructor.name}
+                      {instructor.firstName} {instructor.lastName}
                     </Typography>
                     <Typography color="#A9A9C8;" fontSize="12px">
                       {instructor.twitterUrl && (

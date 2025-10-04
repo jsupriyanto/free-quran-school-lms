@@ -23,6 +23,14 @@ class CourseDataService {
   getCourseStats() {
     return http.get("/course/dashboard/stats");
   }
+
+  getUpcomingCourses() {
+    return http.get("/course/dashboard/upcoming/courses");
+  }
+
+  getUpcomingCourseCompletions() {
+    return http.get("/course/dashboard/current/courses");
+  }
 }
 
 export default new CourseDataService();

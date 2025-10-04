@@ -1,40 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Box } from "@mui/material";
 import Card from "@mui/material/Card";
 import { Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Image from "next/image";
+import courseService from "@/services/course.service";
 
-const CurrentCoursesData = [
-  {
-    id: "1",
-    title: "C++",
-    subTitle: "It & Software",
-    image: "/images/c+.png",
-    score: "4.5 Score",
-    duration: "37 Days Left",
-  },
-  {
-    id: "2",
-    title: "JavaScript",
-    subTitle: "Web Development",
-    image: "/images/js.png",
-    score: "4.5 Score",
-    duration: "35 Days Left",
-  },
-  {
-    id: "3",
-    title: "Haskell",
-    subTitle: "Programming",
-    image: "/images/haskell.png",
-    score: "4.5 Score",
-    duration: "30 Days Left",
-  },
-];
+const UpcomingCourses = () => {
+  const [upcomingCourses, setUpcomingCourses] = React.useState([]);
 
-const CurrentCourses = () => {
+  useEffect(() => {
+    courseService.getUpcomingCourses().then((data) => {
+      setUpcomingCourses(data);
+    });
+  }, []);
+
   return (
     <>
       <Card
@@ -60,12 +42,12 @@ const CurrentCourses = () => {
               fontWeight: 500,
             }}
           >
-            Current Courses
+            Upcoming Courses
           </Typography>
         </Box>
 
         <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
-          {CurrentCoursesData.map((course) => (
+          {upcomingCourses.map((course) => (
             <Grid size={{ xs: 12, sm: 12, md: 12, lg: 4 }} key={course.id}>
               <Box
                 sx={{
@@ -92,10 +74,10 @@ const CurrentCourses = () => {
                       fontSize="12px"
                       mt="5px"
                     >
-                      {course.subTitle}
+                      {course.courseCategory}
                     </Typography>
                   </Box>
-                  <Image src={course.image} alt="img" width={53} height={53} />
+                  <Image src={course.coursePictureUrl} alt="img" width={53} height={53} />
                 </Box>
 
                 <Box
@@ -107,7 +89,7 @@ const CurrentCourses = () => {
                   }}
                 >
                   <Typography fontSize="13px" fontWeight="500">
-                    {course.score}
+                    {course.numberOfLessons} Lessons
                   </Typography>
 
                   <Typography fontSize="13px" color="#A9A9C8">
@@ -123,4 +105,4 @@ const CurrentCourses = () => {
   );
 };
 
-export default CurrentCourses;
+export default UpcomingCourses;

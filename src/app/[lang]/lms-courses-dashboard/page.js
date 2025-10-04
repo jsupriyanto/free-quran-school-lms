@@ -6,7 +6,7 @@ import HoursSpent from "@/components/Dashboard/LMSCourses/HoursSpent";
 import MyPlanning from "@/components/Dashboard/LMSCourses/MyPlanning";
 import TopInstructor from "@/components/Dashboard/LMSCourses/TopInstructor";
 import TotalWatched from "@/components/Dashboard/LMSCourses/TotalWatched";
-import CurrentCourses from "@/components/Dashboard/LMSCourses/CurrentCourses";
+import CurrentCourses from "@/components/Dashboard/LMSCourses/UpcomingCourses";
 import Courses from "@/components/Dashboard/LMSCourses/Courses";
 import ActiveCourse from "@/components/Dashboard/LMSCourses/ActiveCourse";
 import CourseCompletion from "@/components/Dashboard/LMSCourses/CourseCompletion";

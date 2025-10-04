@@ -214,7 +214,8 @@ export default function TeachersList({ lang }) {
     if (selectedTeacher) {
       // Update existing teacher
       updatedTeacher = {
-        name: data.get("name"),
+        firstName: data.get("firstName"),
+        lastName: data.get("lastName"),
         bio: data.get("bio"),
         photoUrl: data.get("photoUrl") ? URL.createObjectURL(data.get("photoUrl")) : selectedTeacher.photoUrl,
         facebookUrl: data.get("facebookUrl"),
@@ -227,7 +228,8 @@ export default function TeachersList({ lang }) {
     } else {
       // Create new teacher
       newTeacher = {
-        name: data.get("name"),
+        firstName: data.get("firstName"),
+        lastName: data.get("lastName"),
         bio: data.get("bio"),
         photoUrl: data.get("photoUrl") ? URL.createObjectURL(data.get("photoUrl")) : "/images/user.png",
         facebookUrl: data.get("facebookUrl"),
@@ -433,7 +435,7 @@ export default function TeachersList({ lang }) {
                           }}
                           className="ml-10px"
                         >
-                          {row.name}
+                          {row.firstName} {row.lastName}
                         </Typography>
                       </Box>
                     </Box>
@@ -669,18 +671,45 @@ export default function TeachersList({ lang }) {
                       mb: "12px",
                     }}
                   >
-                    Name
+                    First Name
                   </Typography>
 
                   <TextField
                     autoComplete="name"
-                    name="name"
+                    name="firstName"
                     required
                     fullWidth
-                    id="name"
-                    label="Name"
+                    id="firstName"
+                    label="First Name"
                     autoFocus
-                    value={selectedTeacher?.name || ""}
+                    value={selectedTeacher?.firstName || ""}
+                    InputProps={{
+                      style: { borderRadius: 8 },
+                    }}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+                  <Typography
+                    as="h5"
+                    sx={{
+                      fontWeight: "500",
+                      fontSize: "14px",
+                      mb: "12px",
+                    }}
+                  >
+                    Last Name
+                  </Typography>
+
+                  <TextField
+                    autoComplete="name"
+                    name="lastName"
+                    required
+                    fullWidth
+                    id="lastName"
+                    label="Last Name"
+                    autoFocus
+                    value={selectedTeacher?.lastName || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}

@@ -3,7 +3,7 @@ import Grid from "@mui/material/Grid";
 import Features from "@/components/Dashboard/LMSCourses/Features";
 import YourProgress from "@/components/Dashboard/LMSCourses/YourProgress";
 import TopInstructor from "@/components/Dashboard/LMSCourses/TopInstructor";
-import CurrentCourses from "@/components/Dashboard/LMSCourses/CurrentCourses";
+import UpcomingCourses from "@/components/Dashboard/LMSCourses/UpcomingCourses";
 import Courses from "@/components/Dashboard/LMSCourses/Courses";
 import TopStudents from "@/components/Dashboard/LMSCourses/TopStudents";
 import PageTitle from "@/components/Common/PageTitle";
@@ -36,7 +36,7 @@ export default function Page({ lang }) {
 
             <TopStudents />
 
-            <CurrentCourses />
+            <UpcomingCourses />
           </Grid>
         </Grid>
       </SessionProvider>
