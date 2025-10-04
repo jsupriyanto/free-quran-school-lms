@@ -2,58 +2,44 @@
 import Grid from "@mui/material/Grid";
 import Features from "@/components/Dashboard/LMSCourses/Features";
 import YourProgress from "@/components/Dashboard/LMSCourses/YourProgress";
-import ExperienceIQ from "@/components/Dashboard/LMSCourses/ExperienceIQ";
-import HoursSpent from "@/components/Dashboard/LMSCourses/HoursSpent";
-import MyPlanning from "@/components/Dashboard/LMSCourses/MyPlanning";
 import TopInstructor from "@/components/Dashboard/LMSCourses/TopInstructor";
-import TotalWatched from "@/components/Dashboard/LMSCourses/TotalWatched";
 import CurrentCourses from "@/components/Dashboard/LMSCourses/CurrentCourses";
 import Courses from "@/components/Dashboard/LMSCourses/Courses";
-import ActiveCourse from "@/components/Dashboard/LMSCourses/ActiveCourse";
-import CourseCompletion from "@/components/Dashboard/LMSCourses/CourseCompletion";
-import Messages from "@/components/Dashboard/LMSCourses/Messages";
 import TopStudents from "@/components/Dashboard/LMSCourses/TopStudents";
 import PageTitle from "@/components/Common/PageTitle";
+import { SessionProvider, getSession } from "next-auth/react";
+
+const session = await getSession();
 
 export default function Page({ lang }) {
   const currentLanguage = lang || 'en';
   return (
     <>
-      <PageTitle
-        pageTitle="Learning Management Dashboard"
-        dashboardUrl={`/${currentLanguage}/`}
-        dashboardText="Dashboard"
-      />
+      <SessionProvider session={session}>
+        <PageTitle
+          pageTitle="Learning Management Dashboard"
+          dashboardUrl={`/${currentLanguage}/`}
+          dashboardText="Dashboard"
+        />
 
-      {/* Features */}
-      <Features />
+        <Features />
 
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
-        <Grid size={{ sm: 12, sm: 12, md: 12, lg: 12, xl: 8 }}>
-          {/* YourProgress */}
-          <YourProgress />
+        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
+          <Grid size={{ sm: 12, sm: 12, md: 12, lg: 12, xl: 8 }}>
+            <YourProgress />
 
-          <Courses />
-        </Grid>
+            <Courses />
+          </Grid>
 
-        <Grid size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 4 }}>
-            {/* TopInstructor */}
+          <Grid size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 4 }}>
             <TopInstructor />
 
             <TopStudents />
 
             <CurrentCourses />
-        </Grid>
-
-        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
-            {/* CurrentCourse */}
-            
-
-            {/* Courses */}
-
           </Grid>
         </Grid>
-
-      </>
-      );  
+      </SessionProvider>
+    </>
+  );
 }

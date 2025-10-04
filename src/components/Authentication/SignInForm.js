@@ -12,7 +12,7 @@ import Checkbox from "@mui/material/Checkbox";
 import styles from "@/components/Authentication/Authentication.module.css";
 import Image from "next/image";
 import authService from "@/services/auth.service";
-
+import { signIn } from "next-auth/react";
 
 const SignInForm = () => {
   const handleSubmit = (event) => {
@@ -21,16 +21,23 @@ const SignInForm = () => {
     
     authService.signin(data.get("email"), data.get("password"))
       .then(response => {
-        console.log("Login successful:", response);
-
-        // Redirect to dashboard or another page after successful login
-        window.location.href = '/en/'; // Adjust the path as needed
+        window.location.href = '/en/';
       }
       )
       .catch(error => {
         console.error("Login failed:", error);
         alert("Login failed: " + (error.response?.data?.message || error.message));
       });
+  };
+
+  // use next-auth for authentication with google
+  const handleSignIn = (provider) => {
+    signIn(provider).then(() => {
+      window.location.href = '/en/';
+    }).catch((error) => {
+      console.error("OAuth Sign-in failed:", error);
+      alert("OAuth Sign-in failed: " + (error.response?.data?.message || error.message));
+    });
   };
 
   return (
@@ -76,12 +83,12 @@ const SignInForm = () => {
                   mb: "30px",
                 }}
               >
-                <Link href="#" className={styles.googleBtn}>
+                <Link href="#" className={styles.googleBtn} onClick={() => handleSignIn("google")}>
                   <Image src="/images/google-icon.png" width={20} height={20} alt="Google icon" />
                   Sign in with Google
                 </Link>
 
-                <Link href="#" className={styles.fbBtn}>
+                <Link href="#" className={styles.fbBtn} onClick={() => handleSignIn("facebook")}>
                   <Image src="/images/fb-icon.png" width={20} height={20} alt="Facebook icon" />
                   Sign in with Facebook
                 </Link>

@@ -12,6 +12,7 @@ import Checkbox from "@mui/material/Checkbox";
 import styles from "@/components/Authentication/Authentication.module.css";
 import Image from "next/image";
 import authService from "@/services/auth.service";
+import { signIn } from "next-auth/react";
 
 const SignUpForm = () => {
   const handleSubmit = (event) => {
@@ -30,6 +31,15 @@ const SignUpForm = () => {
       .catch(error => {
         console.error("Registration failed:", error);
       });
+  };
+
+  const handleSignUp = (provider) => {
+    signIn(provider).then(() => {
+      window.location.href = '/en/';
+    }).catch((error) => {
+      console.error("OAuth Sign-up failed:", error);
+      alert("OAuth Sign-up failed: " + (error.response?.data?.message || error.message));
+    });
   };
 
   return (
@@ -75,12 +85,12 @@ const SignUpForm = () => {
                   mb: "30px",
                 }}
               >
-                <Link href="#" className={styles.googleBtn}>
+                <Link href="#" className={styles.googleBtn} onClick={() => handleSignUp("google")}>
                   <Image src="/images/google-icon.png" alt="Google" width={20} height={20} />{" "}
                   Sign in with Google
                 </Link>
 
-                <Link href="#" className={styles.fbBtn}>
+                <Link href="#" className={styles.fbBtn} onClick={() => handleSignUp("facebook")}>
                   <Image src="/images/fb-icon.png" alt="Facebook" width={20} height={20} />{" "}
                   Sign in with Facebook
                 </Link>

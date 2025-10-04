@@ -24,18 +24,18 @@ export const metadata = {
 	description: "Free Quran School is a free online learning management system for Quran education.",
 };
 
-export default function RootLayout({ children, lang}) {
+export default function RootLayout({ children, lang }) {
 	return (
 		<html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
 			<body>
-				<AppRouterCacheProvider options={{ enableCssLayer: true }}>
-					<ThemeProvider theme={theme}>
-						{/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-						<CssBaseline />
+					<AppRouterCacheProvider options={{ enableCssLayer: true }}>
+						<ThemeProvider theme={theme}>
+							{/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+							<CssBaseline />
 
-						<LayoutProvider>{children}</LayoutProvider>
-					</ThemeProvider>
-				</AppRouterCacheProvider>
+							<LayoutProvider>{children}</LayoutProvider>
+						</ThemeProvider>
+					</AppRouterCacheProvider>
 			</body>
 		</html>
 	);
