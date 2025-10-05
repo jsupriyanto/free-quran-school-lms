@@ -3,8 +3,8 @@
 import React from "react";
 import Card from "@mui/material/Card";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import EnrolledCourses from "./EnrolledCourses";
-import CreatedCourses from "./CreatedCourses";
+import HighProgressCourses from "./HighProgress";
+import LowProgressCourses from "./LowProgress";
 import styles from '@/components/Dashboard/LMSCourses/Courses/Tabs.module.css';
 
 const Courses = () => {
@@ -20,16 +20,16 @@ const Courses = () => {
       >
         <Tabs className={styles.tabs}>
           <TabList>
-            <Tab>Enrolled</Tab>
-            <Tab>Created</Tab>
+            <Tab>High Progress</Tab>
+            <Tab>Low Progress</Tab>
           </TabList>
 
           <TabPanel>
-            <EnrolledCourses />
+            <HighProgressCourses />
           </TabPanel>
           
           <TabPanel>
-            <CreatedCourses />
+            <LowProgressCourses />
           </TabPanel>
         </Tabs>
       </Card>

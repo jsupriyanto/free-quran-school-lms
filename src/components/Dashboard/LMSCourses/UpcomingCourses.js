@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import Card from "@mui/material/Card";
 import { Typography } from "@mui/material";
@@ -9,13 +9,19 @@ import Image from "next/image";
 import courseService from "@/services/course.service";
 
 const UpcomingCourses = () => {
-  const [upcomingCourses, setUpcomingCourses] = React.useState([]);
+  const [courses, setCourses] = useState([]);
 
   useEffect(() => {
-    courseService.getUpcomingCourses().then((data) => {
-      setUpcomingCourses(data);
-    });
+    getCourses();
   }, []);
+
+  const getCourses = () => {
+    courseService.getUpcomingCourses().then((response) => {
+      setCourses(response.data);
+    }).catch((err) => {
+      console.log(err);
+    });
+  };
 
   return (
     <>
@@ -47,7 +53,7 @@ const UpcomingCourses = () => {
         </Box>
 
         <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
-          {upcomingCourses.map((course) => (
+          {Array.isArray(courses) && courses?.map((course) => (
             <Grid size={{ xs: 12, sm: 12, md: 12, lg: 4 }} key={course.id}>
               <Box
                 sx={{

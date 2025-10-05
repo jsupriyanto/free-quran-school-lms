@@ -21,8 +21,16 @@ import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
 import Link from "@mui/material/Link";
 import Image from "next/image";
+import enrollmentService from "@/services/enrollment.service";
+import { useEffect } from "react";
+import moment from "moment";
+import authService from "@/services/auth.service";
 
-function EnrolledCourse(props) {
+moment.tz = authService.getCurrentUser()?.timeZone || "America/Chicago";
+
+function LowProgressCourse(props) {
+  
+  
   const theme = useTheme();
   const { count, page, rowsPerPage, onPageChange } = props;
 
@@ -84,116 +92,22 @@ function EnrolledCourse(props) {
   );
 }
 
-EnrolledCourse.propTypes = {
+LowProgressCourse.propTypes = {
   count: PropTypes.number.isRequired,
   onPageChange: PropTypes.func.isRequired,
   page: PropTypes.number.isRequired,
   rowsPerPage: PropTypes.number.isRequired,
 };
 
-function createData(
-  courseName,
-  courseLink,
-  image,
-  result,
-  badgeClass,
-  expirationTime,
-  endTime
-) {
-  return {
-    courseName,
-    courseLink,
-    image,
-    result,
-    badgeClass,
-    expirationTime,
-    endTime,
-  };
-}
-
-const rows = [
-  createData(
-    "Mastering Node.js: From Zero to Backend Hero",
-    "#",
-    "/images/course-brand1.png",
-    "87%",
-    "primaryBadge",
-    "2021-12-19 10:00 AM",
-    "2021-12-19 12:00 PM"
-  ),
-  createData(
-    "Angular Essentials: Build Dynamic Web Apps with Ease",
-    "#",
-    "/images/course-brand2.png",
-    "Failed",
-    "dangerBadge",
-    "2021-12-19 11:00 AM",
-    "2021-12-19 01:00 PM"
-  ),
-  createData(
-    "Swift for iOS: Build Stunning Apps from Scratch",
-    "#",
-    "/images/course-brand3.png",
-    "Passed",
-    "successBadge",
-    "2021-12-19 02:00 PM",
-    "2021-12-19 04:00 PM"
-  ),
-  createData(
-    "React Native Bootcamp: Mobile Development Made Simple",
-    "#",
-    "/images/course-brand4.png",
-    "90%",
-    "primaryBadge",
-    "2021-12-19 04:00 PM",
-    "2021-12-19 06:00 PM"
-  ),
-  createData(
-    "Node.js Crash Course: Backend Development in Practice",
-    "#",
-    "/images/course-brand1.png",
-    "87%",
-    "primaryBadge",
-    "2021-12-19 10:00 AM",
-    "2021-12-19 12:00 PM"
-  ),
-  createData(
-    "React Fundamentals: Learn to Build Interactive UIs",
-    "#",
-    "/images/course-brand2.png",
-    "Failed",
-    "dangerBadge",
-    "2021-12-19 11:00 AM",
-    "2021-12-19 01:00 PM"
-  ),
-  createData(
-    "Kotlin for Android: Create Powerful Mobile Apps",
-    "#",
-    "/images/course-brand3.png",
-    "Passed",
-    "successBadge",
-    "2021-12-19 02:00 PM",
-    "2021-12-19 04:00 PM"
-  ),
-  createData(
-    "React.js Deep Dive: Become a Frontend Pro",
-    "#",
-    "/images/course-brand4.png",
-    "90%",
-    "primaryBadge",
-    "2021-12-19 04:00 PM",
-    "2021-12-19 06:00 PM"
-  ),
-].sort((a, b) => (a.courseName < b.courseName ? -1 : 1));
-
-export default function EnrolledCourses() {
+export default function LowProgressCourses() {
+  const [enrollments, setEnrollments] = React.useState([]);
   // Table
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(6);
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - enrollments.length) : 0;
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -203,6 +117,12 @@ export default function EnrolledCourses() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+    useEffect(() => { 
+    enrollmentService.getEnrollmentWithLowProgress().then((response) => {
+      setEnrollments(response.data);
+    });
+  }, []);
 
   return (
     <>
@@ -222,37 +142,61 @@ export default function EnrolledCourses() {
               <TableCell
                 sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
               >
+                Name
+              </TableCell>
+
+              <TableCell
+                sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+              >
                 Courses
               </TableCell>
 
               <TableCell
-                align="center"
                 sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
               >
-                Result
+                Start Date
               </TableCell>
 
               <TableCell
                 sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
               >
-                Start Time
+                End Date
               </TableCell>
 
               <TableCell
                 align="right"
                 sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
               >
-                End Time
+                Enrolled Date
               </TableCell>
+              
+              <TableCell
+                align="center"
+                sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+              >
+                Percentage
+              </TableCell>
+
             </TableRow>
           </TableHead>
 
           <TableBody>
             {(rowsPerPage > 0
-              ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              : rows
+              ? enrollments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              : enrollments
             ).map((row) => (
-              <TableRow key={row.courseName}>
+              <TableRow key={row.id}>
+                <TableCell
+                  style={{
+                    width: 120,
+                    borderBottom: "1px solid #F7FAFF",
+                    fontSize: "13px",
+                    paddingTop: "13px",
+                    paddingBottom: "13px",
+                  }}
+                >
+                  {row.user.firstName} {row.user.lastName}
+                </TableCell>
                 <TableCell
                   style={{
                     width: 350,
@@ -268,7 +212,7 @@ export default function EnrolledCourses() {
                     }}
                   >
                     <Image
-                      src={row.image}
+                      src={row.course.coursePictureUrl}
                       alt="Product Img"
                       width={65}
                       height={65}
@@ -282,14 +226,51 @@ export default function EnrolledCourses() {
                       className="ml-10px"
                     >
                       <Link
-                        href={row.courseLink}
+                        href={row.course.coursePictureUrl}
                         underline="none"
                         color="#260944"
                       >
-                        {row.courseName}
+                        {row.course.title}
                       </Link>
                     </Typography>
                   </Box>
+                </TableCell>
+
+                <TableCell
+                  style={{
+                    width: 120,
+                    borderBottom: "1px solid #F7FAFF",
+                    fontSize: "13px",
+                    paddingTop: "13px",
+                    paddingBottom: "13px",
+                  }}
+                >
+                  {moment(row.course.startDate).format('L')}
+                  
+                </TableCell>
+
+                <TableCell
+                  style={{
+                    width: 120,
+                    borderBottom: "1px solid #F7FAFF",
+                    fontSize: "13px",
+                    paddingTop: "13px",
+                    paddingBottom: "13px",
+                  }}
+                >
+                  {moment(row.course.endDate).format('L')}
+                </TableCell>
+
+                <TableCell
+                  style={{
+                    width: 120,
+                    borderBottom: "1px solid #F7FAFF",
+                    fontSize: "13px",
+                    paddingTop: "13px",
+                    paddingBottom: "13px",
+                  }}
+                >
+                  {moment(row.course.enrolledAt).format('L')}
                 </TableCell>
 
                 <TableCell
@@ -302,32 +283,7 @@ export default function EnrolledCourses() {
                     paddingBottom: "13px",
                   }}
                 >
-                  <span className={row.badgeClass}>{row.result}</span>
-                </TableCell>
-
-                <TableCell
-                  style={{
-                    width: 120,
-                    borderBottom: "1px solid #F7FAFF",
-                    fontSize: "13px",
-                    paddingTop: "13px",
-                    paddingBottom: "13px",
-                  }}
-                >
-                  {row.expirationTime}
-                </TableCell>
-
-                <TableCell
-                  align="right"
-                  style={{
-                    width: 120,
-                    borderBottom: "1px solid #F7FAFF",
-                    fontSize: "13px",
-                    paddingTop: "13px",
-                    paddingBottom: "13px",
-                  }}
-                >
-                  {row.endTime}
+                  <span className={row.badgeClass}>{row.progress} %</span>
                 </TableCell>
               </TableRow>
             ))}
@@ -347,7 +303,7 @@ export default function EnrolledCourses() {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                 colSpan={4}
-                count={rows.length}
+                count={enrollments.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 SelectProps={{
@@ -356,9 +312,9 @@ export default function EnrolledCourses() {
                   },
                   native: true,
                 }}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                ActionsComponent={EnrolledCourse}
+                // onPageChange={handleChangePage}
+                // onRowsPerPageChange={handleChangeRowsPerPage}
+                ActionsComponent={LowProgressCourse}
                 style={{ borderBottom: "none" }}
               />
             </TableRow>

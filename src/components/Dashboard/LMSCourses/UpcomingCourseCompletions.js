@@ -9,11 +9,11 @@ import Image from "next/image";
 import courseService from "@/services/course.service";
 
 const UpcomingCourseCompletions = () => {
-  const [UpcomingCourseCompletions, setUpcomingCourseCompletions] = React.useState([]);
+  const [courseCompletions, setCourseCompletions] = React.useState([]);
 
   useEffect(() => {
-    courseService.getUpcomingCourseCompletions().then((data) => {
-      setUpcomingCourseCompletions(data);
+    courseService.getUpcomingCourseCompletions().then((response) => {
+      setCourseCompletions(response.data);
     });
   }, []);
 
@@ -47,7 +47,7 @@ const UpcomingCourseCompletions = () => {
         </Box>
 
         <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
-          {UpcomingCourseCompletions.map((course) => (
+          {Array.isArray(courseCompletions) && courseCompletions?.map((course) => (
             <Grid size={{ xs: 12, sm: 12, md: 12, lg: 4 }} key={course.id}>
               <Box
                 sx={{

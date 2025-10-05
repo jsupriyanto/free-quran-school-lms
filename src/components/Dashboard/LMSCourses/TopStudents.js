@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Box } from "@mui/material";
 import Card from "@mui/material/Card";
 import { Typography } from "@mui/material";
@@ -10,6 +10,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Grid from "@mui/material/Grid";
 import Image from "next/image";
+import userService from "@/services/user.service";
 
 const TopStudentsData = [
   {
@@ -51,11 +52,19 @@ const TopStudentsData = [
 ];
 
 const TopStudents = () => {
+  const [students, setStudents] = React.useState([]);
+
   // Select Form
   const [select, setSelect] = React.useState("");
   const handleChange = (event) => {
     setSelect(event.target.value);
   };
+
+  useEffect(() => {
+    userService.getTop5Students().then((response) => {
+      setStudents(response.data);
+    });
+  }, []);
 
   return (
     <>
@@ -110,7 +119,7 @@ const TopStudents = () => {
         </Box>
 
         <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 2 }}>
-          {TopStudentsData.map((student) => (
+          {students.map((student) => (
             <Grid size={{ xs: 12, sm: 12, md: 6, lg: 6 }} key={student.id}>
               <Box
                 sx={{
@@ -131,7 +140,7 @@ const TopStudents = () => {
                   }}
                 >
                   <Image
-                    src={student.image}
+                    src={student.pictureUrl || `/images/user${student.id}.png`}
                     alt="Image"
                     width={35}
                     height={35}
@@ -140,7 +149,7 @@ const TopStudents = () => {
 
                   <Box className="ml-1">
                     <Typography as="h4" fontWeight={500} fontSize="12.5px">
-                      {student.name}
+                      {student.firstName} {student.lastName}
                     </Typography>
                     <Typography color="#A9A9C8;" fontSize="12px">
                       {student.userName}

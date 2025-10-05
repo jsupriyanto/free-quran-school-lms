@@ -17,7 +17,6 @@ import PersonIcon from "@mui/icons-material/Person";
 import Settings from "@mui/icons-material/Settings";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import Logout from "@mui/icons-material/Logout";
 import { useParams } from "next/navigation";
 import authService from "@/services/auth.service";
@@ -35,18 +34,15 @@ const Profile = () => {
     setAnchorEl(null);
   };
 
-  let userName = '';
-  let userRole = '';
+  const [userName, setUserName] = React.useState('');
+  const [userRole, setUserRole] = React.useState('');
 
   useEffect(() => {
   const currentUser = authService.getCurrentUser();
   if (currentUser) {
-    userName = currentUser.name;
-    userRole = currentUser.roles
-      .map((role) => role.replace('ROLE_', '').toLowerCase())
-      .map((role) => role.charAt(0).toUpperCase() + role.slice(1))
-      .join(', ');
-  } 
+    setUserName(currentUser.name);
+    setUserRole(currentUser.roles.replace('ROLE_', '').toLowerCase());
+  }
 }, []);
 
 
