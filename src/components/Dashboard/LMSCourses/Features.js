@@ -17,28 +17,28 @@ const Features = () => {
     id: "1",
     title: "",
     subTitle: "Enrolled Courses",
-    image: "/images/icon1.png",
+    image: "/assets/img/icon1.png",
   }
 
   let completedEnrollments = {
     id: "2",
     title: "",
     subTitle: "Completed Enrollments",
-    image: "/images/icon3.png",
+    image: "/assets/img/icon3.png",
   }
 
   let activeCourses = {
     id: "3",
     title: "",
     subTitle: "Active Courses",
-    image: "/images/icon2.png",
+    image: "/assets/img/icon2.png",
   };
   
   let totalStudents = {
     id: "4",
     title: "",
     subTitle: "Total Students",
-    image: "/images/icon4.png",
+    image: "/assets/img/icon4.png",
   };
 
   

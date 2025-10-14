@@ -9,7 +9,7 @@ import Link from "next/link";
 import ClearIcon from "@mui/icons-material/Clear";
 import IconButton from "@mui/material/IconButton";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+
 
 const SidebarNav = styled("nav")(({ theme }) => ({
 	background: "#fff",
@@ -32,7 +32,6 @@ const SidebarWrap = styled("div")(({ theme }) => ({
 }));
 
 const Sidebar = ({ toogleActive }) => {
-	const { lang } = useParams();
 	return (
 		<>
 			<div className="leftSidebarDark">
@@ -47,18 +46,16 @@ const Sidebar = ({ toogleActive }) => {
 								justifyContent: "space-between",
 							}}
 						>
-							<Link href={`/${lang}/`}>
+							<Link href="/">
 								<Image
-									src="/images/logo.png"
+									src="/assets/img/logo.png"
 									alt="Logo"
 									className="black-logo"
 									width={147}
 									height={41}
 								/>
-
-								{/* For Dark Variation */}
 								<Image
-									src="/images/logo-white.png"
+									src="/assets/img/logo-white.png"
 									alt="Logo"
 									className="white-logo"
 									width={147}
@@ -78,19 +75,9 @@ const Sidebar = ({ toogleActive }) => {
 							</IconButton>
 						</Box>
 
-						{lang === "en"
-							? sidebarDataEN.map((item, index) => {
-									return <SubMenu item={item} key={index} />;
-							  })
-							: lang === "ar"
-							? sidebarDataAR.map((item, index) => {
-									return <SubMenu item={item} key={index} />;
-							  })
-							: lang === "de"
-							? sidebarDataDE.map((item, index) => {
-									return <SubMenu item={item} key={index} />;
-							  })
-							: ""}
+						{sidebarDataEN.map((item, index) => {
+							return <SubMenu item={item} key={index} />;
+						})}
 					</SidebarWrap>
 				</SidebarNav>
 			</div>

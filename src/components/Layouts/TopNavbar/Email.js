@@ -15,7 +15,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 
 const Email = () => {
-  const { lang } = useParams();
+
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -206,7 +206,7 @@ const Email = () => {
 
           <Typography component="div" textAlign="center">
             <Link
-              href={`/${lang}/email/inbox/`}
+              href="/email/inbox/"
               underline="none"
               sx={{
                 fontSize: "13px",

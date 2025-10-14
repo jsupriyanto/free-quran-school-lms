@@ -15,15 +15,14 @@ const SubMenu = ({ item }) => {
 	const [subnav, setSubnav] = useState(false);
 	const showSubnav = () => setSubnav(!subnav);
 	const pathname = usePathname();
-	const { lang } = useParams();
-
+	
 	return (
 		<>
 			<Link
-				href={`/${lang}${item.path}`}
+				href={`/${item.path}`}
 				onClick={item.subNav && showSubnav}
 				className={`${styles.sidebarLink} ${
-					pathname == `/${lang}${item.path}` && "sidebarLinkActive"
+					pathname == `/${item.path}` && "sidebarLinkActive"
 				}`}
 			>
 				<div>
@@ -42,10 +41,10 @@ const SubMenu = ({ item }) => {
 				item.subNav.map((item, index) => {
 					return (
 						<Link
-							href={`/${lang}${item.path}`}
+							href={`/${item.path}`}
 							key={index}
 							className={`${styles.sidebarLink2} ${
-								pathname == `/${lang}${item.path}` &&
+								pathname == `/${item.path}` &&
 								"sidebarLinkActive2"
 							}`}
 						>

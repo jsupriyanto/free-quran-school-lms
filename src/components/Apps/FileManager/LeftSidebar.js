@@ -72,7 +72,6 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
 
 const LeftSidebar = () => {
   const pathname = usePathname();
-  const { lang } = useParams();
 
   return (
     <>
@@ -109,9 +108,9 @@ const LeftSidebar = () => {
         <ul className={styles.leftNav}>
           <li>
             <Link
-              href={`/${lang}/apps/file-manager/`}
+              href={`/apps/file-manager/`}
               className={
-                pathname == `/${lang}/apps/file-manager/` ? "activeFMLink" : ""
+                pathname == `/apps/file-manager/` ? "activeFMLink" : ""
               }
             >
               <i className="ri-folder-line"></i> My Drive
@@ -120,9 +119,9 @@ const LeftSidebar = () => {
             <ul>
               <li>
                 <Link
-                  href={`/${lang}/apps/file-manager/assets/`}
+                  href={`/apps/file-manager/assets/`}
                   className={
-                    pathname == `/${lang}/apps/file-manager/assets/`
+                    pathname == `/apps/file-manager/assets/`
                       ? "activeFMLink"
                       : ""
                   }
@@ -133,9 +132,9 @@ const LeftSidebar = () => {
 
               <li>
                 <Link
-                  href={`/${lang}/apps/file-manager/projects/`}
+                  href={`/apps/file-manager/projects/`}
                   className={
-                    pathname == `/${lang}/apps/file-manager/projects/`
+                    pathname == `/apps/file-manager/projects/`
                       ? "activeFMLink"
                       : ""
                   }
@@ -146,9 +145,9 @@ const LeftSidebar = () => {
 
               <li>
                 <Link
-                  href={`/${lang}/apps/file-manager/personal/`}
+                  href={`/apps/file-manager/personal/`}
                   className={
-                    pathname == `/${lang}/apps/file-manager/personal/`
+                    pathname == `/apps/file-manager/personal/`
                       ? "activeFMLink"
                       : ""
                   }
@@ -159,9 +158,9 @@ const LeftSidebar = () => {
 
               <li>
                 <Link
-                  href={`/${lang}/apps/file-manager/templates/`}
+                  href={`/apps/file-manager/templates/`}
                   className={
-                    pathname == `/${lang}/apps/file-manager/templates/`
+                    pathname == `/apps/file-manager/templates/`
                       ? "activeFMLink"
                       : ""
                   }
@@ -174,9 +173,9 @@ const LeftSidebar = () => {
 
           <li>
             <Link
-              href={`/${lang}/apps/file-manager/documents/`}
+              href={`/apps/file-manager/documents/`}
               className={
-                pathname == `/${lang}/apps/file-manager/documents/`
+                pathname == `/apps/file-manager/documents/`
                   ? "activeFMLink"
                   : ""
               }
@@ -187,9 +186,9 @@ const LeftSidebar = () => {
 
           <li>
             <Link
-              href={`/${lang}/apps/file-manager/media/`}
+              href={`/apps/file-manager/media/`}
               className={
-                pathname == `/${lang}/apps/file-manager/media/`
+                pathname == `/apps/file-manager/media/`
                   ? "activeFMLink"
                   : ""
               }
@@ -200,9 +199,9 @@ const LeftSidebar = () => {
 
           <li>
             <Link
-              href={`/${lang}/apps/file-manager/recents/`}
+              href={`/apps/file-manager/recents/`}
               className={
-                pathname == `/${lang}/apps/file-manager/recents/`
+                pathname == `/apps/file-manager/recents/`
                   ? "activeFMLink"
                   : ""
               }
@@ -213,9 +212,9 @@ const LeftSidebar = () => {
 
           <li>
             <Link
-              href={`/${lang}/apps/file-manager/important/`}
+              href={`/apps/file-manager/important/`}
               className={
-                pathname == `/${lang}/apps/file-manager/important/`
+                pathname == `/apps/file-manager/important/`
                   ? "activeFMLink"
                   : ""
               }
@@ -226,9 +225,9 @@ const LeftSidebar = () => {
 
           <li>
             <Link
-              href={`/${lang}/apps/file-manager/trash/`}
+              href={`/apps/file-manager/trash/`}
               className={
-                pathname == `/${lang}/apps/file-manager/trash/`
+                pathname == `/apps/file-manager/trash/`
                   ? "activeFMLink"
                   : ""
               }

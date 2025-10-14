@@ -152,8 +152,7 @@ TeachersLists.propTypes = {
 
 const currentUser = authService.getCurrentUser();
 
-export default function TeachersList({ lang }) {
-  const language = lang || "en";
+export default function TeachersList () {
   // Table
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -231,7 +230,7 @@ export default function TeachersList({ lang }) {
         firstName: data.get("firstName"),
         lastName: data.get("lastName"),
         bio: data.get("bio"),
-        photoUrl: data.get("photoUrl") ? URL.createObjectURL(data.get("photoUrl")) : "/images/user.png",
+        photoUrl: data.get("photoUrl") ? URL.createObjectURL(data.get("photoUrl")) : "/assets/img/user.png",
         facebookUrl: data.get("facebookUrl"),
         instagramUrl: data.get("instagramUrl"),
         twitterUrl: data.get("twitterUrl"),
@@ -260,7 +259,7 @@ export default function TeachersList({ lang }) {
     <>
       <PageTitle
         pageTitle="Manage Teachers"
-        dashboardUrl={`/${language}/`}
+        dashboardUrl={`/`}
         dashboardText="Dashboard"
       />
 
@@ -419,8 +418,8 @@ export default function TeachersList({ lang }) {
                       }}
                       className="ml-10px"
                     >
-                      <img
-                        src={row.photoUrl || `/images/user${row.id}.png`}
+                      <Image 
+                        src={row.photoUrl || `/assets/img/user${row.id}.png`}
                         alt="Teacher Photo"
                         width={40}
                         height={40}

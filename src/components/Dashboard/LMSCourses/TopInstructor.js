@@ -83,11 +83,12 @@ const TopInstructor = () => {
                   }}
                 >
                   <Image
-                    src={instructor.photoUrl || `/images/user${instructor.id}.png`}
+                    src={instructor.photoUrl ? instructor.photoUrl.replace('/images/', '/assets/img/') : `/no-photo.jpg`}
                     alt="Image"
                     width={45}
                     height={45}
                     className="borderRadius10"
+                    unoptimized
                   />
 
                   <Box className="ml-1">

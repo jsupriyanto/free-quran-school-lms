@@ -12,25 +12,25 @@ import Image from "next/image";
 const MyPlanningData = [
   {
     id: "1",
-    image: "/images/3d1.png",
+    image: "/assets/img/3d1.png",
     title: "Animation Learning",
     dateTime: "Dec 14, 08:30 PM",
   },
   {
     id: "2",
-    image: "/images/3d2.png",
+    image: "/assets/img/3d2.png",
     title: "UI/UX Research",
     dateTime: "Dec 15, 09:30 PM",
   },
   {
     id: "3",
-    image: "/images/3d3.png",
+    image: "/assets/img/3d3.png",
     title: "Machine Learning",
     dateTime: "Dec 16, 10:30 PM",
   },
   {
     id: "4",
-    image: "/images/3d4.png",
+    image: "/assets/img/3d4.png",
     title: "Web Development",
     dateTime: "Dec 17, 11:30 PM",
   },

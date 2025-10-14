@@ -23,7 +23,7 @@ import authService from "@/services/auth.service";
 import { useEffect } from "react";
 
 const Profile = () => {
-  const { lang } = useParams();
+
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -129,7 +129,7 @@ const Profile = () => {
             <PersonIcon fontSize="small" />
           </ListItemIcon>
           <Link
-            href={`/${lang}/pages/profile/`}
+            href="/pages/profile/"
             fontSize="13px"
             color="inherit"
             underline="none"
@@ -143,7 +143,7 @@ const Profile = () => {
             <MailOutlineIcon fontSize="small" />
           </ListItemIcon>
           <Link
-            href={`/${lang}/email/inbox/`}
+            href="/email/inbox/"
             fontSize="13px"
             color="inherit"
             underline="none"
@@ -157,7 +157,7 @@ const Profile = () => {
             <ChatBubbleOutlineIcon fontSize="small" />
           </ListItemIcon>
           <Link
-            href={`/${lang}/apps/chat/`}
+            href="/apps/chat/"
             fontSize="13px"
             color="inherit"
             underline="none"
@@ -171,7 +171,7 @@ const Profile = () => {
             <Settings fontSize="small" />
           </ListItemIcon>
           <Link
-            href={`/${lang}/settings/account/`}
+            href="/settings/account/"
             fontSize="13px"
             color="inherit"
             underline="none"
@@ -191,7 +191,7 @@ const Profile = () => {
             href="#"
             onClick={() => {
               authService.signout();
-              window.location.href = `/${lang}/authentication/sign-in`;
+              window.location.href = "/authentication/sign-in";
             }}
             fontSize="13px"
             color="inherit"

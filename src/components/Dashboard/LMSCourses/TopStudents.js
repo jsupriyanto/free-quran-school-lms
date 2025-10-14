@@ -15,37 +15,37 @@ import userService from "@/services/user.service";
 const TopStudentsData = [
   {
     id: "1",
-    image: "/images/user18.png",
+    image: "/assets/img/user18.png",
     name: "Melanie Grutt",
     userName: "@melgrutt",
   },
   {
     id: "2",
-    image: "/images/user19.png",
+    image: "/assets/img/user19.png",
     name: "Theron Trump",
     userName: "@therontrump",
   },
   {
     id: "3",
-    image: "/images/user20.png",
+    image: "/assets/img/user20.png",
     name: "Johen Mark",
     userName: "@johenmark",
   },
   {
     id: "4",
-    image: "/images/user21.png",
+    image: "/assets/img/user21.png",
     name: "Nicholas Tanner",
     userName: "@nilyeager",
   },
   {
     id: "5",
-    image: "/images/user22.png",
+    image: "/assets/img/user22.png",
     name: "Tyler Mark",
     userName: "@tylemark",
   },
   {
     id: "6",
-    image: "/images/user23.png",
+    image: "/assets/img/user23.png",
     name: "Martina Albart",
     userName: "@martina",
   },
@@ -140,7 +140,7 @@ const TopStudents = () => {
                   }}
                 >
                   <Image
-                    src={student.pictureUrl || `/images/user${student.id}.png`}
+                    src={student.pictureUrl || `/assets/img/user${student.id}.png`}
                     alt="Image"
                     width={35}
                     height={35}

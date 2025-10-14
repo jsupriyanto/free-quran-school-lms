@@ -7,7 +7,6 @@ import { Typography } from "@mui/material";
 import { useParams, usePathname, useRouter } from "next/navigation";
 
 const RTLSwitch = () => {
-	const { lang } = useParams();
 	const pathname = usePathname();
 	const router = useRouter();
 
@@ -41,37 +40,11 @@ const RTLSwitch = () => {
 							fontSize: "13px",
 						}}
 						className={`${
-							lang === "en" ? "redColor" : "whiteColor"
+							"redColor"
 						} mr-10px`}
 						onClick={() => switchLocale("en")}
 					>
 						English
-					</Button>
-					<Button
-						variant="contained"
-						sx={{
-							textTransform: "capitalize",
-							fontSize: "13px",
-						}}
-						className={`${
-							lang === "ar" ? "redColor" : "whiteColor"
-						} mr-10px`}
-						onClick={() => switchLocale("ar")}
-					>
-						Arabic
-					</Button>
-					<Button
-						variant="contained"
-						sx={{
-							textTransform: "capitalize",
-							fontSize: "13px",
-						}}
-						className={`${
-							lang === "de" ? "redColor" : "whiteColor"
-						} mr-10px`}
-						onClick={() => switchLocale("de")}
-					>
-						German
 					</Button>
 				</div>
 			</div>

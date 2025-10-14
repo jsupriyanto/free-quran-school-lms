@@ -81,7 +81,6 @@ BootstrapDialogTitle.propTypes = {
 
 const LeftSidebar = () => {
   const pathname = usePathname();
-  const { lang } = useParams();
 
   // Compose modal
   const [open, setOpen] = React.useState(false);
@@ -150,9 +149,9 @@ const LeftSidebar = () => {
         <ul className={styles.leftNav}>
           <li>
             <Link
-              href={`/${lang}/email/inbox/`}
+              href={`/email/inbox/`}
               className={
-                pathname == `/${lang}/email/inbox/` ? styles.active : ""
+                pathname == `/email/inbox/` ? styles.active : ""
               }
             >
               <span>
@@ -172,8 +171,8 @@ const LeftSidebar = () => {
 
           <li>
             <Link
-              href={`/${lang}/#`}
-              className={pathname == `/${lang}/#` ? styles.FormDataactive : ""}
+              href={`/#`}
+              className={pathname == `/#` ? styles.FormDataactive : ""}
             >
               <i className="ri-star-fill"></i> Important
             </Link>

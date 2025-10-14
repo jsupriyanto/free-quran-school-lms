@@ -16,7 +16,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 
 const Notification = () => {
-  const { lang } = useParams();
+
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -170,7 +170,7 @@ const Notification = () => {
 
           <Typography component="div" textAlign="center">
             <Link
-              href={`/${lang}/notification/`}
+              href="/notification/"
               underline="none"
               sx={{
                 fontSize: "13px",

@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 
 const NavBar = () => {
   const pathname = usePathname();
-  const { lang } = useParams();
+
 
   return (
     <>
@@ -16,26 +16,26 @@ const NavBar = () => {
         <ul>
           <li
             className={
-              pathname == `/${lang}/settings/account/` ? styles.active : ""
+              pathname == "/settings/account/" ? styles.active : ""
             }
           >
-            <Link href={`/${lang}/settings/account/`}>Account</Link>
+            <Link href="/settings/account/">Account</Link>
           </li>
           <li
             className={
-              pathname == `/${lang}/settings/security/` ? styles.active : ""
+              pathname == "/settings/security/" ? styles.active : ""
             }
           >
-            <Link href={`/${lang}/settings/security/`}>Security</Link>
+            <Link href="/settings/security/">Security</Link>
           </li>
           <li
             className={
-              pathname == `/${lang}/settings/privacy-policy/`
+              pathname == "/settings/privacy-policy/"
                 ? styles.active
                 : ""
             }
           >
-            <Link href={`/${lang}/settings/privacy-policy/`}>
+            <Link href="/settings/privacy-policy/">
               Privacy Policy
             </Link>
           </li>
