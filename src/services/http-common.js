@@ -7,24 +7,26 @@ const getCurrentUser = () => {
     }
     return null;
 }
-let user = null;
-// This will run only once when the component mounts
-if (typeof window !== 'undefined') // Ensure this code runs only on the client side
-    user = getCurrentUser();
-
-let authorization = "";
-
-if (user && user.accessToken) {
-     authorization = "Bearer " + user.accessToken;
-}
-
 const http = axios.create({
     baseURL: "https://free-quran-school-api.vercel.app/api/",
     headers: {
-        "Content-type": "application/json",
-        "Authorization": authorization
+        "Content-type": "application/json"
     }
 });
+
+// Request interceptor to dynamically add authorization header
+http.interceptors.request.use(
+    (config) => {
+        const user = getCurrentUser();
+        if (user && user.accessToken) {
+            config.headers.Authorization = `Bearer ${user.accessToken}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 http.interceptors.response.use(
   (response) => response,
