@@ -21,6 +21,7 @@ import Logout from "@mui/icons-material/Logout";
 import { useParams, useRouter } from "next/navigation";
 import authService from "@/services/auth.service";
 import { useEffect } from "react";
+import { signOut } from "next-auth/react";
 
 const Profile = () => {
   const router = useRouter();
@@ -189,8 +190,12 @@ const Profile = () => {
 
           <Link
             href="#"
-            onClick={() => {
+            onClick={async () => {
+              // Sign out from custom auth system
               authService.signout();
+              // Sign out from NextAuth (OAuth sessions)
+              await signOut({ redirect: false });
+              // Redirect to sign-in page
               router.push("/authentication/sign-in");
             }}
             fontSize="13px"

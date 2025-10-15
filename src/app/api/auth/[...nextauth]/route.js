@@ -35,16 +35,28 @@ export const authOptions = {
           lastName: lastName
         };
 
-        // Call auth service to get user info
-        const response = await authService.signInWithOAuth(signInRequest);
-        if (response && response.accessToken) {
-          localStorage.setItem("user", JSON.stringify(response));
+        try {
+          // Call auth service to get user info
+          const response = await authService.signInWithOAuth(signInRequest);
+          if (response && response.data && response.data.accessToken) {
+            // Store user data in the JWT token (server-side)
+            token.user = response.data;
+          }
+        } catch (error) {
+          console.error("OAuth sign-in error:", error);
         }
-
-        return response;
       }
 
-      return null;
+      // Always return token object (never null)
+      return token;
+    },
+    
+    async session({ session, token }) {
+      // Pass user data from JWT token to session
+      if (token && token.user) {
+        session.user = token.user;
+      }
+      return session;
     },
   },
 };

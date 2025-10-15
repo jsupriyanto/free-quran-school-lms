@@ -18,6 +18,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import LayoutProvider from "@/providers/LayoutProvider";
+import AuthProvider from "@/providers/AuthProvider";
 
 export const metadata = {
 	title: "Free Quran School - Learning Management Dashboard",
@@ -32,8 +33,9 @@ export default function RootLayout({ children }) {
 						<ThemeProvider theme={theme}>
 							{/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
 							<CssBaseline />
-
-							<LayoutProvider>{children}</LayoutProvider>
+							<AuthProvider>
+								<LayoutProvider>{children}</LayoutProvider>
+							</AuthProvider>
 						</ThemeProvider>
 					</AppRouterCacheProvider>
 			</body>

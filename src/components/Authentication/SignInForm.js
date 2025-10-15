@@ -34,12 +34,11 @@ const SignInForm = () => {
 
   // use next-auth for authentication with google
   const handleSignIn = (provider) => {
-    signIn(provider).then(() => {
-      router.push('/');
-    }).catch((error) => {
-      console.error("OAuth Sign-in failed:", error);
-      alert("OAuth Sign-in failed: " + (error.response?.data?.message || error.message));
-    });
+    signIn(provider, { redirect: false })
+      .catch((error) => {
+        console.error("OAuth Sign-in failed:", error);
+        alert("OAuth Sign-in failed: " + (error.response?.data?.message || error.message));
+      });
   };
 
   return (
