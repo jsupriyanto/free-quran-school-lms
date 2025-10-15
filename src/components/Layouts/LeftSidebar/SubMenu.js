@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { styled } from "@mui/material/styles";
 import Link from "next/link";
 import styles from "@/components/Layouts/LeftSidebar/SubMenu.module.css";
-import { usePathname, useParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const SidebarLabel = styled("span")(({ theme }) => ({
 	position: "relative",
@@ -19,10 +19,10 @@ const SubMenu = ({ item }) => {
 	return (
 		<>
 			<Link
-				href={`/${item.path}`}
+				href={item.path}
 				onClick={item.subNav && showSubnav}
 				className={`${styles.sidebarLink} ${
-					pathname == `/${item.path}` && "sidebarLinkActive"
+					pathname == item.path && "sidebarLinkActive"
 				}`}
 			>
 				<div>
@@ -41,10 +41,10 @@ const SubMenu = ({ item }) => {
 				item.subNav.map((item, index) => {
 					return (
 						<Link
-							href={`/${item.path}`}
+							href={item.path}
 							key={index}
 							className={`${styles.sidebarLink2} ${
-								pathname == `/${item.path}` &&
+								pathname == item.path &&
 								"sidebarLinkActive2"
 							}`}
 						>

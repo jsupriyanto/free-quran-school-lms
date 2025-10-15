@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import Card from "@mui/material/Card";
-import { Typography } from "@mui/material"; 
-import LoadingButton from '@mui/lab/LoadingButton';
+import { Typography, Button } from "@mui/material"; 
 import SaveIcon from '@mui/icons-material/Save';
 import Stack from '@mui/material/Stack';
 
@@ -30,15 +29,15 @@ const Loading = () => {
         </Typography>
         
         <Stack direction="row" spacing={2}>
-          <LoadingButton loading variant="outlined" className="for-dark-border">
+          <Button loading variant="outlined" className="for-dark-border">
             Submit
-          </LoadingButton>
+          </Button>
 
-          <LoadingButton loading loadingIndicator="Loading…" variant="outlined" className="for-dark-border whiteColor">
+          <Button loading loadingIndicator="Loading…" variant="outlined" className="for-dark-border whiteColor">
             Fetch data
-          </LoadingButton>
+          </Button>
 
-          <LoadingButton
+          <Button
             loading
             loadingPosition="start"
             startIcon={<SaveIcon />}
@@ -46,7 +45,7 @@ const Loading = () => {
             className="for-dark-border"
           >
             Save
-          </LoadingButton>
+          </Button>
         </Stack>
       </Card>
     </>

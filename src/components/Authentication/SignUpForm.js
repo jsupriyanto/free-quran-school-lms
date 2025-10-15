@@ -13,8 +13,10 @@ import styles from "@/components/Authentication/Authentication.module.css";
 import Image from "next/image";
 import authService from "@/services/auth.service";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const SignUpForm = () => {
+  const router = useRouter();
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -26,7 +28,7 @@ const SignUpForm = () => {
     )
       .then(response => {
         alert("Registration successful! Please sign in.");
-        window.location.href = '/en/authentication/sign-in';
+        router.push('/authentication/sign-in');
       })
       .catch(error => {
         console.error("Registration failed:", error);
@@ -35,7 +37,7 @@ const SignUpForm = () => {
 
   const handleSignUp = (provider) => {
     signIn(provider).then(() => {
-      window.location.href = '/en/';
+      router.push('/');
     }).catch((error) => {
       console.error("OAuth Sign-up failed:", error);
       alert("OAuth Sign-up failed: " + (error.response?.data?.message || error.message));

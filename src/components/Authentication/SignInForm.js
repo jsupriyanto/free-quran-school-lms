@@ -13,15 +13,17 @@ import styles from "@/components/Authentication/Authentication.module.css";
 import Image from "next/image";
 import authService from "@/services/auth.service";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const SignInForm = () => {
+  const router = useRouter();
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     
     authService.signin(data.get("email"), data.get("password"))
       .then(response => {
-        window.location.href = '/en/';
+        router.push('/');
       }
       )
       .catch(error => {
@@ -33,7 +35,7 @@ const SignInForm = () => {
   // use next-auth for authentication with google
   const handleSignIn = (provider) => {
     signIn(provider).then(() => {
-      window.location.href = '/en/';
+      router.push('/');
     }).catch((error) => {
       console.error("OAuth Sign-in failed:", error);
       alert("OAuth Sign-in failed: " + (error.response?.data?.message || error.message));

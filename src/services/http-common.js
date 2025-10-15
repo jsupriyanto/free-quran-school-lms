@@ -1,8 +1,10 @@
 import axios from "axios";
 
 const getCurrentUser = () => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) return JSON.parse(userStr);
+    if (typeof window !== 'undefined') {
+        const userStr = localStorage.getItem("user");
+        if (userStr) return JSON.parse(userStr);
+    }
     return null;
 }
 let user = null;
@@ -31,8 +33,10 @@ http.interceptors.response.use(
     const { status } = error.response;
     if (status === 401 || status === 403) {
       // Clear authentication data and redirect to login
-      localStorage.removeItem('user');
-      window.location.href = '/authentication/sign-in';
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+        window.location.href = '/authentication/sign-in';
+      }
     }
     return Promise.reject(error);
   }

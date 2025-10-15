@@ -1,3 +1,5 @@
+"use client";
+
 import Grid from "@mui/material/Grid";
 import Features from "@/components/Dashboard/LMSCourses/Features";
 import YourProgress from "@/components/Dashboard/LMSCourses/YourProgress";
@@ -14,12 +16,29 @@ import Messages from "@/components/Dashboard/LMSCourses/Messages";
 import TopStudents from "@/components/Dashboard/LMSCourses/TopStudents";
 import PageTitle from "@/components/Common/PageTitle";
 import authService from "@/services/auth.service";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Page() {
-  const currentUser = authService.getCurrentUser();
-  if (!currentUser) {
-    // Redirect to sign-in page if not authenticated
-    window.location.href = `/authentication/sign-in`;
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+      router.push('/authentication/sign-in');
+      return;
+    }
+    setIsAuthenticated(true);
+    setLoading(false);
+  }, [router]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
     return null;
   }
   

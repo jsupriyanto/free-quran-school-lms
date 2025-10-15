@@ -18,12 +18,12 @@ import Settings from "@mui/icons-material/Settings";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import Logout from "@mui/icons-material/Logout";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import authService from "@/services/auth.service";
 import { useEffect } from "react";
 
 const Profile = () => {
-
+  const router = useRouter();
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -191,7 +191,7 @@ const Profile = () => {
             href="#"
             onClick={() => {
               authService.signout();
-              window.location.href = "/authentication/sign-in";
+              router.push("/authentication/sign-in");
             }}
             fontSize="13px"
             color="inherit"
