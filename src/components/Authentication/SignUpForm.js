@@ -61,11 +61,11 @@ const SignUpForm = () => {
               <Typography as="h1" fontSize="28px" fontWeight="700" mb="5px">
                 Get’s started.{" "}
                 <Image
-                  src="/images/favicon.png"
-                  alt="favicon"
+                  src="/images/free-quran-school.jpg"
+                  alt="free quran school"
                   className={styles.favicon}
-                  width={30}
-                  height={30}
+                  width={120}
+                  height={120}
                 />
               </Typography>
 
