@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import * as React from "react";
+import Image from "next/image";
 import { Box, Typography } from "@mui/material";
 import Card from "@mui/material/Card";
 import PropTypes from "prop-types";
@@ -35,8 +36,12 @@ import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import CloseIcon from "@mui/icons-material/Close";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import authService from "@/services/auth.service";
 import teacherService from "@/services/teacher.service";
+import ImageUpload from "@/components/Common/ImageUpload";
+import { useSearch } from "@/contexts/SearchContext";
 
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
@@ -157,6 +162,14 @@ export default function TeachersList() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [teachers, setTeachers] = React.useState([]);
+  const [allTeachers, setAllTeachers] = React.useState([]); // Store all teachers for filtering
+  
+  // Sort state
+  const [sortBy, setSortBy] = React.useState('name'); // 'name', 'bio', 'facebook', 'instagram', 'twitter', 'linkedin', 'youtube'
+  const [sortOrder, setSortOrder] = React.useState('asc'); // 'asc', 'desc'
+  
+  // Use global search context
+  const { globalSearchTerm } = useSearch();
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -174,17 +187,23 @@ export default function TeachersList() {
   // Create new teacher modal
   const [open, setOpen] = React.useState(false);
   const [selectedTeacher, setSelectedTeacher] = React.useState(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = React.useState(null);
 
 
   const handleClickOpen = () => {
+    setSelectedTeacher(null);
+    setUploadedImageUrl(null);
     setOpen(true);
   };
   const handleClose = () => {
+    setSelectedTeacher(null);
+    setUploadedImageUrl(null);
     setOpen(false);
   };
 
   const handleEditOpen = (teacher) => {
     setSelectedTeacher(teacher);
+    setUploadedImageUrl(teacher.photoUrl || null);
     setOpen(true);
   }
 
@@ -200,9 +219,114 @@ export default function TeachersList() {
 
   const handleRefresh = () => {
     teacherService.getAll().then((response) => {
-      setTeachers(response.data);
+      setAllTeachers(response.data); // Store all teachers
+      const filteredAndSorted = applySearchAndSort(response.data, globalSearchTerm, sortBy, sortOrder);
+      setTeachers(filteredAndSorted); // Apply current search and sort
     });
   };
+
+  // Search and Sort function
+  const applySearchAndSort = (teachersData, search, sort, order) => {
+    let filteredTeachers = [...teachersData];
+
+    // Apply search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredTeachers = filteredTeachers.filter(teacher => {
+        const fullName = `${teacher.firstName} ${teacher.lastName}`.toLowerCase();
+        const bio = teacher.bio?.toLowerCase() || '';
+        const facebookUrl = teacher.facebookUrl?.toLowerCase() || '';
+        const instagramUrl = teacher.instagramUrl?.toLowerCase() || '';
+        const twitterUrl = teacher.twitterUrl?.toLowerCase() || '';
+        const linkedInUrl = teacher.linkedInUrl?.toLowerCase() || '';
+        const youtubeUrl = teacher.youtubeUrl?.toLowerCase() || '';
+        
+        return fullName.includes(searchLower) ||
+               bio.includes(searchLower) ||
+               facebookUrl.includes(searchLower) ||
+               instagramUrl.includes(searchLower) ||
+               twitterUrl.includes(searchLower) ||
+               linkedInUrl.includes(searchLower) ||
+               youtubeUrl.includes(searchLower);
+      });
+    }
+
+    // Apply sorting
+    filteredTeachers.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sort) {
+        case 'name':
+          aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
+          bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
+          break;
+        case 'bio':
+          aValue = a.bio?.toLowerCase() || '';
+          bValue = b.bio?.toLowerCase() || '';
+          break;
+        case 'facebook':
+          aValue = a.facebookUrl?.toLowerCase() || '';
+          bValue = b.facebookUrl?.toLowerCase() || '';
+          break;
+        case 'instagram':
+          aValue = a.instagramUrl?.toLowerCase() || '';
+          bValue = b.instagramUrl?.toLowerCase() || '';
+          break;
+        case 'twitter':
+          aValue = a.twitterUrl?.toLowerCase() || '';
+          bValue = b.twitterUrl?.toLowerCase() || '';
+          break;
+        case 'linkedin':
+          aValue = a.linkedInUrl?.toLowerCase() || '';
+          bValue = b.linkedInUrl?.toLowerCase() || '';
+          break;
+        case 'youtube':
+          aValue = a.youtubeUrl?.toLowerCase() || '';
+          bValue = b.youtubeUrl?.toLowerCase() || '';
+          break;
+        default:
+          aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
+          bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
+      }
+      
+      if (aValue < bValue) return order === 'asc' ? -1 : 1;
+      if (aValue > bValue) return order === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filteredTeachers;
+  };
+
+  // Handle column header click for sorting
+  const handleHeaderClick = (column) => {
+    if (sortBy === column) {
+      // If clicking the same column, toggle sort order
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // If clicking a different column, set new column and default to ascending
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
+  // Render sort icon for table headers
+  const renderSortIcon = (column) => {
+    if (sortBy !== column) {
+      return <ArrowUpwardIcon sx={{ fontSize: 16, opacity: 0.5 }} />;
+    }
+    return sortOrder === 'asc' ? 
+      <ArrowUpwardIcon sx={{ fontSize: 16 }} /> : 
+      <ArrowDownwardIcon sx={{ fontSize: 16 }} />;
+  };
+
+  // Apply search and sort when globalSearchTerm or sort options change
+  useEffect(() => {
+    if (allTeachers.length > 0) {
+      const filteredAndSorted = applySearchAndSort(allTeachers, globalSearchTerm, sortBy, sortOrder);
+      setTeachers(filteredAndSorted);
+      setPage(0); // Reset to first page when search/sort changes
+    }
+  }, [globalSearchTerm, sortBy, sortOrder, allTeachers]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -216,7 +340,7 @@ export default function TeachersList() {
         firstName: data.get("firstName"),
         lastName: data.get("lastName"),
         bio: data.get("bio"),
-        photoUrl: data.get("photoUrl") ? URL.createObjectURL(data.get("photoUrl")) : selectedTeacher.photoUrl,
+        photoUrl: uploadedImageUrl,
         facebookUrl: data.get("facebookUrl"),
         instagramUrl: data.get("instagramUrl"),
         twitterUrl: data.get("twitterUrl"),
@@ -230,7 +354,7 @@ export default function TeachersList() {
         firstName: data.get("firstName"),
         lastName: data.get("lastName"),
         bio: data.get("bio"),
-        photoUrl: data.get("photoUrl") ? URL.createObjectURL(data.get("photoUrl")) : "/assets/img/user.png",
+        photoUrl: uploadedImageUrl || "/assets/img/user.png",
         facebookUrl: data.get("facebookUrl"),
         instagramUrl: data.get("instagramUrl"),
         twitterUrl: data.get("twitterUrl"),
@@ -245,20 +369,23 @@ export default function TeachersList() {
       handleRefresh();
       handleClose();
       setSelectedTeacher(null);
+      setUploadedImageUrl(null);
     });
   };
   // End Add Teacher 
   
   useEffect(() => {
     teacherService.getAll().then((response) => {
-      setTeachers(response.data);
+      setAllTeachers(response.data); // Store all teachers
+      const filteredAndSorted = applySearchAndSort(response.data, globalSearchTerm, sortBy, sortOrder);
+      setTeachers(filteredAndSorted); // Apply current search and sort
     });
   }, []);
 
   return (
     <>
       <PageTitle
-        pageTitle="Manage Teachers"
+        pageTitle="Teachers"
         dashboardUrl="/"
         dashboardText="Dashboard"
       />
@@ -322,6 +449,16 @@ export default function TeachersList() {
           </Button>
         </Box>
 
+        <Typography
+          sx={{
+            fontSize: "14px",
+            color: "#64748B",
+            mb: "12px",
+          }}
+        >
+          Showing {teachers.length} of {allTeachers.length} teachers
+        </Typography>
+
         <TableContainer
           component={Paper}
           sx={{
@@ -336,51 +473,121 @@ export default function TeachersList() {
             <TableHead sx={{ background: "#F7FAFF" }}>
               <TableRow>
                 <TableCell
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    '&:hover': { backgroundColor: '#f0f4f8' }
+                  }}
+                  onClick={() => handleHeaderClick('name')}
                 >
-                  Name
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    Name
+                    {renderSortIcon('name')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    '&:hover': { backgroundColor: '#f0f4f8' }
+                  }}
+                  onClick={() => handleHeaderClick('bio')}
                 >
-                  Bio
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    Bio
+                    {renderSortIcon('bio')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    '&:hover': { backgroundColor: '#f0f4f8' }
+                  }}
+                  onClick={() => handleHeaderClick('facebook')}
                 >
-                  Facebook
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    Facebook
+                    {renderSortIcon('facebook')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    '&:hover': { backgroundColor: '#f0f4f8' }
+                  }}
+                  onClick={() => handleHeaderClick('instagram')}
                 >
-                  Instagram
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    Instagram
+                    {renderSortIcon('instagram')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    '&:hover': { backgroundColor: '#f0f4f8' }
+                  }}
+                  onClick={() => handleHeaderClick('twitter')}
                 >
-                  Twitter/X
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    Twitter/X
+                    {renderSortIcon('twitter')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    '&:hover': { backgroundColor: '#f0f4f8' }
+                  }}
+                  onClick={() => handleHeaderClick('linkedin')}
                 >
-                  LinkedIn
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    LinkedIn
+                    {renderSortIcon('linkedin')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    '&:hover': { backgroundColor: '#f0f4f8' }
+                  }}
+                  onClick={() => handleHeaderClick('youtube')}
                 >
-                  YouTube
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                    YouTube
+                    {renderSortIcon('youtube')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
@@ -634,34 +841,30 @@ export default function TeachersList() {
               className="dark-BG-101010"
             >
               <Grid container alignItems="center" spacing={2}>
-                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
-                  <Typography
-                    as="h5"
-                    sx={{
-                      fontWeight: "500",
-                      fontSize: "14px",
-                      mb: "12px",
-                    }}
-                  >
-                    Photo
-                  </Typography>
+                {/* Photo Section - Centered */}
+                <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography
+                      as="h5"
+                      sx={{
+                        fontWeight: "500",
+                        fontSize: "14px",
+                        mb: "12px",
+                      }}
+                    >
+                      Photo
+                    </Typography>
 
-                  <TextField
-                    autoComplete="photo"
-                    name="photoUrl"
-                    required
-                    fullWidth
-                    id="photo"
-                    type="file"
-                    autoFocus
-                    value={selectedTeacher?.photoUrl || ""}
-                    InputProps={{
-                      style: { borderRadius: 8 },
-                    }}
-                  />
+                    <ImageUpload
+                      currentImageUrl={selectedTeacher?.photoUrl || uploadedImageUrl}
+                      onImageUpload={setUploadedImageUrl}
+                      maxSize={5 * 1024 * 1024} // 5MB
+                    />
+                  </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+                {/* First Name and Last Name on the same line */}
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography
                     as="h5"
                     sx={{
@@ -688,7 +891,7 @@ export default function TeachersList() {
                   />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography
                     as="h5"
                     sx={{
@@ -707,7 +910,6 @@ export default function TeachersList() {
                     fullWidth
                     id="lastName"
                     label="Last Name"
-                    autoFocus
                     value={selectedTeacher?.lastName || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
@@ -807,12 +1009,12 @@ export default function TeachersList() {
 
                   <TextField
                     autoComplete="linkedin"
-                    name="linkedinUrl"
+                    name="linkedInUrl"
                     fullWidth
                     id="linkedin"
                     label="LinkedIn URL"
                     autoFocus 
-                    value={selectedTeacher?.linkedinUrl || ""}
+                    value={selectedTeacher?.linkedInUrl || ""}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
