@@ -53,7 +53,15 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function SearchForm() {
+export default function SearchForm({ 
+  searchTerm = "", 
+  onSearchChange = () => {}, 
+  placeholder = "Search here.." 
+}) {
+  const handleSearchChange = (event) => {
+    onSearchChange(event.target.value);
+  };
+
   return (
     <>
       <Search className="search-form">
@@ -62,8 +70,10 @@ export default function SearchForm() {
         </SearchIconWrapper>
 
         <StyledInputBase
-          placeholder="Search here.."
+          placeholder={placeholder}
           inputProps={{ "aria-label": "search" }}
+          value={searchTerm}
+          onChange={handleSearchChange}
         />
       </Search>
     </>

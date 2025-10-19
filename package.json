@@ -23,6 +23,7 @@
     "@mui/x-data-grid": "^8.11.3",
     "@mui/x-date-pickers": "^8.11.3",
     "@ramonak/react-progress-bar": "^5.4.0",
+    "@vercel/blob": "^2.0.0",
     "apexcharts": "^5.3.5",
     "axios": "^1.12.2",
     "chart.js": "^4.5.0",

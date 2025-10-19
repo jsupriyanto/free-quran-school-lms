@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import * as React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Avatar } from "@mui/material";
 import Card from "@mui/material/Card";
 import PropTypes from "prop-types";
 import { useTheme } from "@mui/material/styles";
@@ -28,9 +28,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import ClearIcon from "@mui/icons-material/Clear";
+import SearchIcon from "@mui/icons-material/Search";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import Checkbox from "@mui/material/Checkbox";
 import PageTitle from "@/components/Common/PageTitle";
 import { styled } from "@mui/material/styles";
@@ -40,6 +44,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import userService from "@/services/user.service";
 import { getCountryDataList } from "countries-list";
 import authService from "@/services/auth.service";
+import ImageUpload from "@/components/Common/ImageUpload";
+import { useSearch } from "@/contexts/SearchContext";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
@@ -159,11 +165,32 @@ function getCountryNames() {
 const countryNames = getCountryNames();
 const currentUser = authService.getCurrentUser();
 
+// Role options with roleId mapping
+const roleOptions = [
+  { id: 1, name: 'User' },
+  { id: 2, name: 'Admin' },
+  { id: 3, name: 'Teacher' }
+];
+
+// Helper function to get role name by ID
+const getRoleName = (roleId) => {
+  const role = roleOptions.find(r => r.id === roleId);
+  return role ? role.name : 'User';
+};
+
 export default function MembersList() {
   // Table
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [users, setUsers] = React.useState([]);
+  const [allUsers, setAllUsers] = React.useState([]); // Store all users for filtering
+  
+  // Sort state
+  const [sortBy, setSortBy] = React.useState('name'); // 'name', 'email', 'role', 'city', 'country'
+  const [sortOrder, setSortOrder] = React.useState('asc'); // 'asc', 'desc'
+  
+  // Use global search context
+  const { globalSearchTerm, clearSearch } = useSearch();
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -182,18 +209,30 @@ export default function MembersList() {
   const [open, setOpen] = React.useState(false);
   const [selectedCountry, setSelectedCountry] = React.useState("");
   const [selectedUser, setSelectedUser] = React.useState(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = React.useState(null);
+  const [selectedRole, setSelectedRole] = React.useState(1); // Default to User role (roleId: 1)
 
   const handleClickOpen = () => {
+    setSelectedUser(null);
+    setUploadedImageUrl(null);
+    setSelectedCountry("");
+    setSelectedRole(1); // Default to User role
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
+    setSelectedUser(null);
+    setUploadedImageUrl(null);
+    setSelectedCountry("");
+    setSelectedRole(1); // Reset to default User role
   };
 
   const handleEditOpen = (user) => {
     setSelectedCountry(user.country);
     setSelectedUser(user);
+    setUploadedImageUrl(user.profilePicture || null);
+    setSelectedRole(user.roleId || 1); // Set role from user data, default to User (1)
     setOpen(true);
   }
 
@@ -209,9 +248,117 @@ export default function MembersList() {
 
   const handleRefresh = () => {
     userService.getAll().then((response) => {
-      setUsers(response.data);
+      setAllUsers(response.data); // Store all users
+      const filteredAndSorted = applySearchAndSort(response.data, globalSearchTerm, sortBy, sortOrder);
+      setUsers(filteredAndSorted); // Apply current search and sort
     });
   };
+
+  // Search and Sort function
+  const applySearchAndSort = (usersData, search, sort, order) => {
+    let filteredUsers = [...usersData];
+
+    // Apply search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredUsers = filteredUsers.filter(user => {
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        const email = user.username?.toLowerCase() || '';
+        const city = user.city?.toLowerCase() || '';
+        const country = user.country?.toLowerCase() || '';
+        const role = getRoleName(user.roleId).toLowerCase();
+        
+        return fullName.includes(searchLower) ||
+               email.includes(searchLower) ||
+               city.includes(searchLower) ||
+               country.includes(searchLower) ||
+               role.includes(searchLower);
+      });
+    }
+
+    // Apply sorting
+    filteredUsers.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sort) {
+        case 'name':
+          aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
+          bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
+          break;
+        case 'email':
+          aValue = a.username?.toLowerCase() || '';
+          bValue = b.username?.toLowerCase() || '';
+          break;
+        case 'role':
+          aValue = getRoleName(a.roleId);
+          bValue = getRoleName(b.roleId);
+          break;
+        case 'city':
+          aValue = a.city?.toLowerCase() || '';
+          bValue = b.city?.toLowerCase() || '';
+          break;
+        case 'state':
+          aValue = a.state?.toLowerCase() || '';
+          bValue = b.state?.toLowerCase() || '';
+          break;
+        case 'country':
+          aValue = a.country?.toLowerCase() || '';
+          bValue = b.country?.toLowerCase() || '';
+          break;
+        case 'timezone':
+          aValue = a.timezone?.toLowerCase() || '';
+          bValue = b.timezone?.toLowerCase() || '';
+          break;
+        default:
+          aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
+          bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
+      }
+
+      if (order === 'asc') {
+        return aValue.localeCompare(bValue);
+      } else {
+        return bValue.localeCompare(aValue);
+      }
+    });
+
+    return filteredUsers;
+  };
+
+  // Handle table header click for sorting
+  const handleHeaderClick = (columnName) => {
+    if (sortBy === columnName) {
+      // Toggle sort order if same column
+      const newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      setSortOrder(newSortOrder);
+    } else {
+      // Set new column and default to ascending
+      setSortBy(columnName);
+      setSortOrder('asc');
+    }
+    setPage(0); // Reset to first page
+  };
+
+  // Render sort icon for table headers
+  const renderSortIcon = (columnName) => {
+    if (sortBy !== columnName) {
+      return null; // No icon if not currently sorted by this column
+    }
+    return sortOrder === 'asc' ? <ArrowUpwardIcon sx={{ fontSize: 16, ml: 0.5 }} /> : <ArrowDownwardIcon sx={{ fontSize: 16, ml: 0.5 }} />;
+  };
+
+  // Load users on component mount
+  useEffect(() => {
+    handleRefresh();
+  }, []);
+
+  // Watch for changes in global search term or sorting
+  useEffect(() => {
+    if (allUsers.length > 0) {
+      const filteredAndSorted = applySearchAndSort(allUsers, globalSearchTerm, sortBy, sortOrder);
+      setUsers(filteredAndSorted);
+      setPage(0); // Reset to first page when search or sort changes
+    }
+  }, [globalSearchTerm, allUsers, sortBy, sortOrder]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -227,6 +374,8 @@ export default function MembersList() {
         city: data.get("city"),
         state: data.get("state"),
         timezone: data.get("timezone"),
+        profilePicture: uploadedImageUrl,
+        roleId: selectedRole,
       }).then(() => {
         setSelectedUser(null);
         handleClose();
@@ -243,6 +392,8 @@ export default function MembersList() {
         city: data.get("city"),
         state: data.get("state"),
         timezone: data.get("timezone"),
+        profilePicture: uploadedImageUrl,
+        roleId: selectedRole,
       }).then(() => {
         handleClose();
         handleRefresh();
@@ -251,17 +402,10 @@ export default function MembersList() {
   };
   // End Add Task Modal
 
-  useEffect(() => {
-    userService.getAll().then((response) => {
-      setUsers(response.data);
-    });
-  }, []);
-
-
   return (
     <>
       <PageTitle
-        pageTitle="Manage Users"
+        pageTitle="Users"
         dashboardUrl={`/`}
         dashboardText="Dashboard"
       />
@@ -339,44 +483,121 @@ export default function MembersList() {
             <TableHead sx={{ background: "#F7FAFF" }}>
               <TableRow>
                 <TableCell
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    "&:hover": { backgroundColor: "#E3F2FD" }
+                  }}
+                  onClick={() => handleHeaderClick('name')}
                 >
-                  Name
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    Name
+                    {renderSortIcon('name')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    "&:hover": { backgroundColor: "#E3F2FD" }
+                  }}
+                  onClick={() => handleHeaderClick('email')}
                 >
-                  Email
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    Email
+                    {renderSortIcon('email')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    "&:hover": { backgroundColor: "#E3F2FD" }
+                  }}
+                  onClick={() => handleHeaderClick('role')}
                 >
-                  City
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    Role
+                    {renderSortIcon('role')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    "&:hover": { backgroundColor: "#E3F2FD" }
+                  }}
+                  onClick={() => handleHeaderClick('city')}
                 >
-                  State
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    City
+                    {renderSortIcon('city')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    "&:hover": { backgroundColor: "#E3F2FD" }
+                  }}
+                  onClick={() => handleHeaderClick('state')}
                 >
-                  Country
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    State
+                    {renderSortIcon('state')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
                   align="center"
-                  sx={{ borderBottom: "1px solid #F7FAFF", fontSize: "13.5px" }}
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    "&:hover": { backgroundColor: "#E3F2FD" }
+                  }}
+                  onClick={() => handleHeaderClick('country')}
                 >
-                  Timezone
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    Country
+                    {renderSortIcon('country')}
+                  </Box>
+                </TableCell>
+
+                <TableCell
+                  align="center"
+                  sx={{ 
+                    borderBottom: "1px solid #F7FAFF", 
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    "&:hover": { backgroundColor: "#E3F2FD" }
+                  }}
+                  onClick={() => handleHeaderClick('timezone')}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    Timezone
+                    {renderSortIcon('timezone')}
+                  </Box>
                 </TableCell>
 
                 <TableCell
@@ -408,13 +629,15 @@ export default function MembersList() {
                       }}
                       className="ml-10px"
                     >
-                      {/* <img
-                        src={row.image  }
-                        alt="User"
-                        width={40}
-                        height={40}
-                        className="borRadius100"
-                      /> */}
+                      <Avatar
+                        src={row.profilePicture || undefined}
+                        alt={`${row.firstName} ${row.lastName}`}
+                        sx={{ width: 40, height: 40, mr: 1 }}
+                      >
+                        {!row.profilePicture && (
+                          `${row.firstName?.charAt(0) || ''}${row.lastName?.charAt(0) || ''}`
+                        )}
+                      </Avatar>
                       <Box>
                         <Typography
                           as="h5"
@@ -422,7 +645,6 @@ export default function MembersList() {
                             fontWeight: "500",
                             fontSize: "13.5px",
                           }}
-                          className="ml-10px"
                         >
                           {row.firstName} {row.lastName}
                         </Typography>
@@ -440,6 +662,18 @@ export default function MembersList() {
                     }}
                   >
                     {row.username}
+                  </TableCell>
+
+                  <TableCell
+                    align="center"
+                    style={{
+                      borderBottom: "1px solid #F7FAFF",
+                      fontSize: "13px",
+                      paddingTop: "13px",
+                      paddingBottom: "13px",
+                    }}
+                  >
+                    {getRoleName(row.roleId)}
                   </TableCell>
 
                   <TableCell
@@ -612,7 +846,7 @@ export default function MembersList() {
               className="dark-BG-101010"
             >
               <Grid container alignItems="center" spacing={2}>
-                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
                   <Typography
                     as="h5"
                     sx={{
@@ -621,20 +855,13 @@ export default function MembersList() {
                       mb: "12px",
                     }}
                   >
-                    Photo
+                    Profile Photo
                   </Typography>
 
-                  <TextField
-                    autoComplete="image"
-                    name="image"
-                    fullWidth
-                    id="image"
-                    type="file"
-                    autoFocus
-                    value={selectedUser ? selectedUser.image : ''}
-                    InputProps={{
-                      style: { borderRadius: 8 },
-                    }}
+                  <ImageUpload
+                    currentImageUrl={selectedUser?.profilePicture || uploadedImageUrl}
+                    onImageUpload={setUploadedImageUrl}
+                    maxSize={5 * 1024 * 1024} // 5MB
                   />
                 </Grid>
 
@@ -745,6 +972,34 @@ export default function MembersList() {
                       style: { borderRadius: 8 },
                     }}
                   />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+                  <Typography
+                    as="h5"
+                    sx={{
+                      fontWeight: "500",
+                      fontSize: "14px",
+                      mb: "12px",
+                    }}
+                  >
+                    Role
+                  </Typography>
+
+                  <Select
+                    value={selectedRole}
+                    onChange={(event) => setSelectedRole(event.target.value)}
+                    fullWidth
+                    displayEmpty
+                    inputProps={{ 'aria-label': 'Role' }}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    {roleOptions.map((role) => (
+                      <MenuItem key={role.id} value={role.id}>
+                        {role.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>

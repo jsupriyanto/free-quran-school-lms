@@ -8,8 +8,11 @@ import Notification from "./Notification";
 import Profile from "./Profile";
 import Tooltip from "@mui/material/Tooltip";
 import CurrentDate from "./CurrentDate";
+import { useSearch } from "@/contexts/SearchContext";
 
 const TopNavbar = ({ toogleActive }) => {
+  const { globalSearchTerm, updateSearch } = useSearch();
+
   return (
     <>
       <AppBar
@@ -36,7 +39,11 @@ const TopNavbar = ({ toogleActive }) => {
           </Tooltip>
 
           {/* Search form */}
-          <SearchForm />
+          <SearchForm 
+            searchTerm={globalSearchTerm}
+            onSearchChange={updateSearch}
+            placeholder="Search users, courses, or content..."
+          />
 
           <Typography component="div" sx={{ flexGrow: 1 }}></Typography>
 
