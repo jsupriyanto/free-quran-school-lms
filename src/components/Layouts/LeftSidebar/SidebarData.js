@@ -14,6 +14,7 @@ import ViewQuiltIcon from "@mui/icons-material/ViewQuilt";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import TeacherIcon from "@mui/icons-material/Person";
 import CourseIcon from "@mui/icons-material/PlayLesson";
+import EnrollmentIcon from "@mui/icons-material/School";
 
 export const sidebarDataEN = [
 	{
@@ -44,6 +45,12 @@ export const sidebarDataEN = [
 		title: "Courses",
 		path: "/courses/",
 		icon: <CourseIcon />,
+		subNav: [],
+	},
+	{
+		title: "Enrollments",
+		path: "/enrollments/",
+		icon: <EnrollmentIcon />,
 		subNav: [],
 	},
 	// {
