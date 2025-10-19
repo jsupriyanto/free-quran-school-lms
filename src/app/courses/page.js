@@ -570,16 +570,6 @@ export default function CoursesPage() {
             mb: "25px",
           }}
         >
-          <Typography
-            variant="h3"
-            sx={{
-              fontSize: { xs: "16px", md: "18px" },
-              fontWeight: 700,
-              mb: { xs: "10px", sm: "0" },
-            }}
-          >
-            Courses Management
-          </Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <Button
@@ -613,28 +603,6 @@ export default function CoursesPage() {
               Add Course
             </Button>
           </Box>
-        </Box>
-
-        <Box
-          component="form"
-          sx={{
-            display: { xs: "block", sm: "flex" },
-            alignItems: "center",
-            gap: "20px",
-            mb: "20px",
-          }}
-        >
-          <TextField
-            fullWidth
-            label="Search courses..."
-            variant="outlined"
-            value={globalSearchTerm}
-            onChange={(e) => setGlobalSearchTerm && setGlobalSearchTerm(e.target.value)}
-            sx={{ 
-              maxWidth: { xs: "100%", sm: "300px" },
-              mb: { xs: "10px", sm: "0" }
-            }}
-          />
         </Box>
 
         <TableContainer component={Paper} sx={{ boxShadow: "none" }}>

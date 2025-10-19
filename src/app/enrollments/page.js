@@ -138,111 +138,111 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 const sampleEnrollments = [
   {
     id: 1,
-    studentId: 101,
+    userId: 101,
     studentName: "Ahmed Hassan",
     studentEmail: "ahmed.hassan@example.com",
     studentAvatar: "https://i.pravatar.cc/150?img=1",
     courseId: 4,
     courseName: "Arabic Language Basics",
     courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/arabic-class-4J8yYQZxKzLjE9qGfm5P6oAYKpKhQs.jpg",
-    enrollmentDate: "2025-06-15T00:00:00.000Z",
+    enrolledAt: "2025-06-15T00:00:00.000Z",
     status: "Active",
     progress: 75,
     completedLessons: 18,
     totalLessons: 25,
     lastAccessed: "2025-10-18T00:00:00.000Z",
     certificateIssued: false,
-    grade: "A"
+    completionDate: null
   },
   {
     id: 2,
-    studentId: 102,
+    userId: 102,
     studentName: "Fatima Al-Zahra",
     studentEmail: "fatima.zahra@example.com",
     studentAvatar: "https://i.pravatar.cc/150?img=2",
     courseId: 5,
     courseName: "Hifz for Adults: Juz 30",
     courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/hifz-adults-juz30-8R2mNvKzJpQw7YgLfA3x9VqE1TcUoP.jpg",
-    enrollmentDate: "2025-09-01T00:00:00.000Z",
+    enrolledAt: "2025-09-01T00:00:00.000Z",
     status: "Active", 
     progress: 45,
     completedLessons: 14,
     totalLessons: 30,
     lastAccessed: "2025-10-19T00:00:00.000Z",
     certificateIssued: false,
-    grade: "B+"
+    completionDate: null
   },
   {
     id: 3,
-    studentId: 103,
+    userId: 103,
     studentName: "Omar Abdullah",
     studentEmail: "omar.abdullah@example.com",
     studentAvatar: "https://i.pravatar.cc/150?img=3",
     courseId: 6,
     courseName: "IQRA: Learn to Read Quran",
     courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/iqra-learn-read-quran-2N6kMpWvXcYz5QgHfD8r1LoE9TbUsA.jpg",
-    enrollmentDate: "2025-10-01T00:00:00.000Z",
+    enrolledAt: "2025-10-01T00:00:00.000Z",
     status: "Active",
     progress: 95,
     completedLessons: 19,
     totalLessons: 20,
     lastAccessed: "2025-10-19T00:00:00.000Z",
     certificateIssued: false,
-    grade: "A+"
+    completionDate: null
   },
   {
     id: 4,
-    studentId: 104,
+    userId: 104,
     studentName: "Aisha Ibrahim",
     studentEmail: "aisha.ibrahim@example.com",
     studentAvatar: "https://i.pravatar.cc/150?img=4",
     courseId: 7,
     courseName: "Islamic Studies 101",
     courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/islamic-studies-101-4W7pRqXzNmBk1YgLfC3v8PoE2TcUdS.jpg",
-    enrollmentDate: "2025-09-15T00:00:00.000Z",
+    enrolledAt: "2025-09-15T00:00:00.000Z",
     status: "Completed",
     progress: 100,
     completedLessons: 20,
     totalLessons: 20,
     lastAccessed: "2025-10-15T00:00:00.000Z",
     certificateIssued: true,
-    grade: "A"
+    completionDate: "2025-10-15T00:00:00.000Z"
   },
   {
     id: 5,
-    studentId: 105,
+    userId: 105,
     studentName: "Yusuf Mohamed",
     studentEmail: "yusuf.mohamed@example.com",
     studentAvatar: "https://i.pravatar.cc/150?img=5",
     courseId: 8,
     courseName: "Tafsir of Surah Al-Fatiha",
     courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/tafsir-surah-fatiha-9X5tMnKzBpWq3YgHfL7r2VoE8TcUaI.jpg",
-    enrollmentDate: "2025-07-20T00:00:00.000Z",
+    enrolledAt: "2025-07-20T00:00:00.000Z",
     status: "On Hold",
     progress: 30,
     completedLessons: 3,
     totalLessons: 10,
     lastAccessed: "2025-09-30T00:00:00.000Z",
     certificateIssued: false,
-    grade: "C"
+    completionDate: null
   },
   {
     id: 6,
-    studentId: 106,
+    userId: 106,
     studentName: "Maryam Salah",
     studentEmail: "maryam.salah@example.com",
     studentAvatar: "https://i.pravatar.cc/150?img=6",
     courseId: 9,
     courseName: "Tajweed Level I",
     courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/tajweed-level1-1K6mRpWvBcYz7QgHfN9r5LoE3TbUaP.jpg",
-    enrollmentDate: "2025-09-25T00:00:00.000Z",
+    enrolledAt: "2025-09-25T00:00:00.000Z",
     status: "Active",
     progress: 60,
     completedLessons: 9,
     totalLessons: 15,
     lastAccessed: "2025-10-18T00:00:00.000Z",
     certificateIssued: false,
-    grade: "B"
+    completionDate: null
   }
 ];
 
@@ -267,45 +267,99 @@ const sampleStudents = [
 export default function EnrollmentsPage() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [enrollments, setEnrollments] = React.useState(sampleEnrollments);
-  const [filteredEnrollments, setFilteredEnrollments] = React.useState(sampleEnrollments);
+  const [enrollments, setEnrollments] = React.useState([]);
+  const [filteredEnrollments, setFilteredEnrollments] = React.useState([]);
   const [selected, setSelected] = React.useState([]);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [orderBy, setOrderBy] = React.useState("enrollmentDate");
+  const [orderBy, setOrderBy] = React.useState("enrolledAt");
   const [order, setOrder] = React.useState("desc");
   const [open, setOpen] = React.useState(false);
   const [editingEnrollment, setEditingEnrollment] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
-  const [courses, setCourses] = React.useState(sampleCourses);
-  const [students, setStudents] = React.useState(sampleStudents);
+  const [loading, setLoading] = React.useState(true);
+  const [courses, setCourses] = React.useState([]);
+  const [students, setStudents] = React.useState([]);
   const [statusFilter, setStatusFilter] = React.useState("All");
 
-  const { searchQuery } = useSearch();
+  const { globalSearchTerm } = useSearch();
   const router = useRouter();
 
   const [formData, setFormData] = React.useState({
-    studentId: "",
+    userId: "",
     courseId: "",
-    enrollmentDate: "",
+    enrolledAt: "",
     status: "Active",
     progress: 0,
     completedLessons: 0,
     totalLessons: 0,
-    grade: ""
+    completionDate: ""
   });
+
+  // Fetch enrollments from API
+  const fetchEnrollments = async () => {
+    try {
+      setLoading(true);
+      const response = await enrollmentService.getAllEnrollments();
+      console.log("API Response:", response);
+      
+      if (response.data && response.data.length > 0) {
+        setEnrollments(response.data);
+      } else {
+        // Fallback to sample data for development
+        console.log("No API data, using sample enrollments");
+        setEnrollments(sampleEnrollments);
+      }
+    } catch (error) {
+      console.error("Error fetching enrollments:", error);
+      // Fallback to sample data on error
+      setEnrollments(sampleEnrollments);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch courses and students for dropdowns
+  const fetchCoursesAndStudents = async () => {
+    try {
+      const [coursesResponse, studentsResponse] = await Promise.all([
+        courseService.getAll(),
+        userService.getAll()
+      ]);
+      
+      if (coursesResponse.data) {
+        setCourses(coursesResponse.data);
+      } else {
+        setCourses(sampleCourses);
+      }
+      
+      if (studentsResponse.data) {
+        setStudents(studentsResponse.data);
+      } else {
+        setStudents(sampleStudents);
+      }
+    } catch (error) {
+      console.error("Error fetching courses/students:", error);
+      setCourses(sampleCourses);
+      setStudents(sampleStudents);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
-      studentId: "",
+      userId: "",
       courseId: "",
-      enrollmentDate: "",
+      enrolledAt: "",
       status: "Active",
       progress: 0,
       completedLessons: 0,
       totalLessons: 0,
-      grade: ""
+      completionDate: ""
     });
   };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchEnrollments();
+    fetchCoursesAndStudents();
+  }, []);
 
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
@@ -318,15 +372,14 @@ export default function EnrollmentsPage() {
     let filtered = enrollments;
 
     // Apply search filter
-    const searchValue = searchQuery || searchTerm;
-    if (searchValue) {
+    if (globalSearchTerm) {
       filtered = filtered.filter(
         (enrollment) =>
-          enrollment.studentName.toLowerCase().includes(searchValue.toLowerCase()) ||
-          enrollment.studentEmail.toLowerCase().includes(searchValue.toLowerCase()) ||
-          enrollment.courseName.toLowerCase().includes(searchValue.toLowerCase()) ||
-          enrollment.status.toLowerCase().includes(searchValue.toLowerCase()) ||
-          enrollment.grade.toLowerCase().includes(searchValue.toLowerCase())
+          enrollment.studentName.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+          enrollment.studentEmail.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+          enrollment.courseName.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+          enrollment.status.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+          (enrollment.completionDate && enrollment.completionDate.toLowerCase().includes(globalSearchTerm.toLowerCase()))
       );
     }
 
@@ -340,9 +393,9 @@ export default function EnrollmentsPage() {
       let aValue = a[orderBy];
       let bValue = b[orderBy];
 
-      if (orderBy === "enrollmentDate" || orderBy === "lastAccessed") {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
+      if (orderBy === "enrolledAt" || orderBy === "lastAccessed" || orderBy === "completionDate") {
+        aValue = aValue ? new Date(aValue) : new Date(0);
+        bValue = bValue ? new Date(bValue) : new Date(0);
       }
 
       if (orderBy === "studentName") {
@@ -358,7 +411,7 @@ export default function EnrollmentsPage() {
     });
 
     setFilteredEnrollments(filtered);
-  }, [enrollments, searchQuery, searchTerm, orderBy, order, statusFilter]);
+  }, [enrollments, globalSearchTerm, orderBy, order, statusFilter]);
 
   const handleSort = (column) => {
     const isAsc = orderBy === column && order === "asc";
@@ -413,14 +466,14 @@ export default function EnrollmentsPage() {
       setEditingEnrollment(enrollment);
       
       const formattedData = {
-        studentId: enrollment.studentId || "",
+        userId: enrollment.userId || "",
         courseId: enrollment.courseId || "",
-        enrollmentDate: formatDateForInput(enrollment.enrollmentDate),
+        enrolledAt: formatDateForInput(enrollment.enrolledAt),
         status: enrollment.status || "Active",
         progress: enrollment.progress || 0,
         completedLessons: enrollment.completedLessons || 0,
         totalLessons: enrollment.totalLessons || 0,
-        grade: enrollment.grade || ""
+        completionDate: formatDateForInput(enrollment.completionDate)
       };
       
       console.log("Formatted form data:", formattedData);
@@ -438,53 +491,86 @@ export default function EnrollmentsPage() {
     resetForm();
   };
 
-  const handleSaveEnrollment = () => {
+  const handleSaveEnrollment = async () => {
     console.log("Saving enrollment:", formData);
     
-    if (editingEnrollment) {
-      // Update existing enrollment
-      const updatedEnrollments = enrollments.map((enrollment) =>
-        enrollment.id === editingEnrollment.id
-          ? {
-              ...enrollment,
-              ...formData,
-              enrollmentDate: new Date(formData.enrollmentDate).toISOString(),
-              studentName: students.find(s => s.id === parseInt(formData.studentId))?.name || enrollment.studentName,
-              studentEmail: students.find(s => s.id === parseInt(formData.studentId))?.email || enrollment.studentEmail,
-              courseName: courses.find(c => c.id === parseInt(formData.courseId))?.title || enrollment.courseName
-            }
-          : enrollment
-      );
-      setEnrollments(updatedEnrollments);
-    } else {
-      // Add new enrollment
-      const student = students.find(s => s.id === parseInt(formData.studentId));
-      const course = courses.find(c => c.id === parseInt(formData.courseId));
+    try {
+      setLoading(true);
       
-      const newEnrollment = {
-        id: Date.now(),
-        ...formData,
-        studentId: parseInt(formData.studentId),
-        courseId: parseInt(formData.courseId),
-        enrollmentDate: new Date(formData.enrollmentDate).toISOString(),
-        lastAccessed: new Date().toISOString(),
-        certificateIssued: false,
-        studentName: student?.name || "",
-        studentEmail: student?.email || "",
-        courseName: course?.title || "",
-        studentAvatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`,
-        courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/default-course-image.jpg"
-      };
-      setEnrollments([...enrollments, newEnrollment]);
+      if (editingEnrollment) {
+        // Update existing enrollment
+        await enrollmentService.updateEnrollment(editingEnrollment.id, formData);
+      } else {
+        // Create new enrollment
+        await enrollmentService.createEnrollment(formData);
+      }
+      
+      // Refresh the enrollments list
+      await fetchEnrollments();
+      handleCloseModal();
+    } catch (error) {
+      console.error("Error saving enrollment:", error);
+      
+      // Fallback to local state update for development
+      if (editingEnrollment) {
+        // Update existing enrollment locally
+        const updatedEnrollments = enrollments.map((enrollment) =>
+          enrollment.id === editingEnrollment.id
+            ? {
+                ...enrollment,
+                ...formData,
+                enrolledAt: new Date(formData.enrolledAt).toISOString(),
+                studentName: students.find(s => s.id === parseInt(formData.userId))?.name || enrollment.studentName,
+                studentEmail: students.find(s => s.id === parseInt(formData.userId))?.email || enrollment.studentEmail,
+                courseName: courses.find(c => c.id === parseInt(formData.courseId))?.title || enrollment.courseName
+              }
+            : enrollment
+        );
+        setEnrollments(updatedEnrollments);
+      } else {
+        // Add new enrollment locally
+        const student = students.find(s => s.id === parseInt(formData.userId));
+        const course = courses.find(c => c.id === parseInt(formData.courseId));
+        
+        const newEnrollment = {
+          id: Date.now(),
+          ...formData,
+          userId: parseInt(formData.userId),
+          courseId: parseInt(formData.courseId),
+          enrolledAt: new Date(formData.enrolledAt).toISOString(),
+          lastAccessed: new Date().toISOString(),
+          certificateIssued: false,
+          studentName: student?.name || "",
+          studentEmail: student?.email || "",
+          courseName: course?.title || "",
+          studentAvatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`,
+          courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/default-course-image.jpg"
+        };
+        setEnrollments([...enrollments, newEnrollment]);
+      }
+      
+      handleCloseModal();
+    } finally {
+      setLoading(false);
     }
-    
-    handleCloseModal();
   };
 
-  const handleDeleteEnrollment = (id) => {
+  const handleDeleteEnrollment = async (id) => {
     if (window.confirm("Are you sure you want to delete this enrollment?")) {
-      setEnrollments(enrollments.filter((enrollment) => enrollment.id !== id));
-      setSelected(selected.filter((selectedId) => selectedId !== id));
+      try {
+        setLoading(true);
+        await enrollmentService.deleteEnrollment(id);
+        // Refresh the enrollments list
+        await fetchEnrollments();
+        setSelected(selected.filter((selectedId) => selectedId !== id));
+      } catch (error) {
+        console.error("Error deleting enrollment:", error);
+        // Fallback to local state update for development
+        setEnrollments(enrollments.filter((enrollment) => enrollment.id !== id));
+        setSelected(selected.filter((selectedId) => selectedId !== id));
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -493,12 +579,7 @@ export default function EnrollmentsPage() {
   };
 
   const handleRefresh = () => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setEnrollments(sampleEnrollments);
-      setLoading(false);
-    }, 1000);
+    fetchEnrollments();
   };
 
   const getStatusColor = (status) => {
@@ -548,16 +629,6 @@ export default function EnrollmentsPage() {
             mb: "25px",
           }}
         >
-          <Typography
-            variant="h3"
-            sx={{
-              fontSize: { xs: "16px", md: "18px" },
-              fontWeight: 700,
-            }}
-            className="text-black"
-          >
-            Enrollments Management
-          </Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <Button
@@ -598,27 +669,12 @@ export default function EnrollmentsPage() {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             mb: "20px",
             gap: "15px",
             flexWrap: "wrap"
           }}
         >
-          <Box sx={{ position: "relative", minWidth: "300px" }}>
-            <TextField
-              fullWidth
-              placeholder="Search enrollments..."
-              variant="outlined"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  fontSize: "14px",
-                },
-              }}
-            />
-          </Box>
-
           <FormControl sx={{ minWidth: 120 }} size="small">
             <InputLabel>Status</InputLabel>
             <Select
@@ -702,11 +758,11 @@ export default function EnrollmentsPage() {
                   <TableCell
                     sx={{ fontWeight: "500", fontSize: "14px", cursor: "pointer" }}
                     className="text-black"
-                    onClick={() => handleSort("enrollmentDate")}
+                    onClick={() => handleSort("enrolledAt")}
                   >
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                       Enrollment Date
-                      {orderBy === "enrollmentDate" ? (
+                      {orderBy === "enrolledAt" ? (
                         order === "desc" ? (
                           <ArrowDownwardIcon sx={{ fontSize: "16px", ml: "5px" }} />
                         ) : (
@@ -753,11 +809,11 @@ export default function EnrollmentsPage() {
                   <TableCell
                     sx={{ fontWeight: "500", fontSize: "14px", cursor: "pointer" }}
                     className="text-black"
-                    onClick={() => handleSort("grade")}
+                    onClick={() => handleSort("completionDate")}
                   >
                     <Box sx={{ display: "flex", alignItems: "center" }}>
-                      Grade
-                      {orderBy === "grade" ? (
+                      Completion Date
+                      {orderBy === "completionDate" ? (
                         order === "desc" ? (
                           <ArrowDownwardIcon sx={{ fontSize: "16px", ml: "5px" }} />
                         ) : (
@@ -824,10 +880,7 @@ export default function EnrollmentsPage() {
                           />
                           <Box>
                             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {enrollment.studentName}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {enrollment.studentEmail}
+                              {enrollment.user.firstName} {enrollment.user.lastName}
                             </Typography>
                           </Box>
                         </Box>
@@ -835,27 +888,15 @@ export default function EnrollmentsPage() {
 
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          {enrollment.courseImage && (
-                            <Image
-                              src={enrollment.courseImage}
-                              alt={enrollment.courseName}
-                              width={40}
-                              height={40}
-                              style={{
-                                borderRadius: "4px",
-                                objectFit: "cover",
-                              }}
-                            />
-                          )}
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {enrollment.courseName}
+                            {enrollment.course.title}
                           </Typography>
                         </Box>
                       </TableCell>
 
                       <TableCell>
                         <Typography variant="body2">
-                          {formatDate(enrollment.enrollmentDate)}
+                          {formatDate(enrollment.enrolledAt)}
                         </Typography>
                       </TableCell>
 
@@ -888,7 +929,7 @@ export default function EnrollmentsPage() {
 
                       <TableCell>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {enrollment.grade}
+                          {enrollment.completionDate ? formatDate(enrollment.completionDate) : "Not completed"}
                         </Typography>
                       </TableCell>
 
@@ -1005,10 +1046,10 @@ export default function EnrollmentsPage() {
                 <FormControl fullWidth>
                   <InputLabel>Select Student *</InputLabel>
                   <Select
-                    value={formData.studentId}
+                    value={formData.userId}
                     label="Select Student *"
                     onChange={(e) =>
-                      setFormData({ ...formData, studentId: e.target.value })
+                      setFormData({ ...formData, userId: e.target.value })
                     }
                   >
                     {students.map((student) => (
@@ -1071,9 +1112,9 @@ export default function EnrollmentsPage() {
                 <TextField
                   fullWidth
                   type="date"
-                  value={formData.enrollmentDate}
+                  value={formData.enrolledAt}
                   onChange={(e) =>
-                    setFormData({ ...formData, enrollmentDate: e.target.value })
+                    setFormData({ ...formData, enrolledAt: e.target.value })
                   }
                   InputLabelProps={{
                     shrink: true,
@@ -1203,16 +1244,19 @@ export default function EnrollmentsPage() {
                   }}
                   className="text-black"
                 >
-                  Grade
+                  Completion Date
                 </Typography>
 
                 <TextField
                   fullWidth
-                  placeholder="e.g., A+, B, C"
-                  value={formData.grade}
+                  type="date"
+                  value={formData.completionDate}
                   onChange={(e) =>
-                    setFormData({ ...formData, grade: e.target.value })
+                    setFormData({ ...formData, completionDate: e.target.value })
                   }
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
               </Box>
             </Grid>

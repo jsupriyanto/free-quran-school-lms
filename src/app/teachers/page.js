@@ -449,16 +449,6 @@ export default function TeachersList() {
           </Button>
         </Box>
 
-        <Typography
-          sx={{
-            fontSize: "14px",
-            color: "#64748B",
-            mb: "12px",
-          }}
-        >
-          Showing {teachers.length} of {allTeachers.length} teachers
-        </Typography>
-
         <TableContainer
           component={Paper}
           sx={{
