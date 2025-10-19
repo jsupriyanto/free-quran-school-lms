@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Box, 
   Button, 
@@ -21,6 +21,11 @@ const ImageUpload = ({
   const [imagePreview, setImagePreview] = useState(currentImageUrl);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+
+  // Update image preview when currentImageUrl prop changes
+  useEffect(() => {
+    setImagePreview(currentImageUrl);
+  }, [currentImageUrl]);
 
   const validateFile = (file) => {
     if (!file) return 'No file selected';

@@ -40,6 +40,12 @@ export const sidebarDataEN = [
 		icon: <TeacherIcon />,		
 		subNav: [],
 	},
+	{
+		title: "Courses",
+		path: "/courses/",
+		icon: <CourseIcon />,
+		subNav: [],
+	},
 	// {
 	// 	title: "UI Elements",
 	// 	path: "/ui-elements/alerts/",
@@ -373,6 +379,18 @@ export const sidebarDataAR = [
 				path: "/contact-list/profile/",
 			},
 		],
+	},
+	{
+		title: "المعلمون",
+		path: "/teachers/",
+		icon: <TeacherIcon />,
+		subNav: [],
+	},
+	{
+		title: "الدورات",
+		path: "/courses/",
+		icon: <CourseIcon />,
+		subNav: [],
 	},
 	{
 		title: "UI Elements",
@@ -724,6 +742,18 @@ export const sidebarDataDE = [
 				path: "/contact-list/profile/",
 			},
 		],
+	},
+	{
+		title: "Lehrer",
+		path: "/teachers/",
+		icon: <TeacherIcon />,
+		subNav: [],
+	},
+	{
+		title: "Kurse",
+		path: "/courses/",
+		icon: <CourseIcon />,
+		subNav: [],
 	},
 	{
 		title: "UI Elements",
