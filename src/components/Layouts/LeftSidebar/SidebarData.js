@@ -40,12 +40,6 @@ export const sidebarDataEN = [
 		icon: <TeacherIcon />,		
 		subNav: [],
 	},
-	{
-		title: "Courses",
-		path: "/courses/",
-		icon: <CourseIcon />,
-		subNav: [],
-	},
 	// {
 	// 	title: "UI Elements",
 	// 	path: "/ui-elements/alerts/",
