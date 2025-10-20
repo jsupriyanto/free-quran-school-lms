@@ -10,6 +10,47 @@ import StarIcon from "@mui/icons-material/Star";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
+// HTML sanitization function for course descriptions
+const sanitizeHtml = (html) => {
+  if (!html) return "";
+  
+  // Basic client-side sanitization - only run on client
+  if (typeof window === 'undefined') return html;
+  
+  try {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Remove script tags and event handlers
+    const scripts = tempDiv.querySelectorAll('script');
+    scripts.forEach(script => script.remove());
+    
+    // Remove on* event attributes and dangerous tags
+    const allElements = tempDiv.querySelectorAll('*');
+    allElements.forEach(element => {
+      // Remove dangerous tags
+      if (['script', 'iframe', 'object', 'embed', 'form'].includes(element.tagName.toLowerCase())) {
+        element.remove();
+        return;
+      }
+      
+      // Remove event handler attributes
+      Array.from(element.attributes).forEach(attr => {
+        if (attr.name.toLowerCase().startsWith('on') || 
+            ['javascript:', 'vbscript:', 'data:'].some(prefix => 
+              attr.value.toLowerCase().includes(prefix))) {
+          element.removeAttribute(attr.name);
+        }
+      });
+    });
+    
+    return tempDiv.innerHTML;
+  } catch (error) {
+    console.warn('HTML sanitization failed:', error);
+    return html; // Fallback to original HTML
+  }
+};
+
 export default function CourseOverviewPage() {
   const params = useParams();
   const courseId = params.id;
@@ -31,7 +72,7 @@ export default function CourseOverviewPage() {
         const sampleCourse = {
           id: parseInt(courseId),
           title: "Quran Recitation Basics",
-          description: "Learn the fundamentals of Quran recitation with proper Tajweed rules and pronunciation techniques. This comprehensive course covers basic Arabic pronunciation, Tajweed rules, and practical recitation exercises.",
+          description: "<p>Learn the <strong>fundamentals</strong> of Quran recitation with proper <em>Tajweed rules</em> and pronunciation techniques.</p><p>This comprehensive course includes:</p><ul><li>Basic Arabic pronunciation</li><li>Tajweed rules and application</li><li>Practical recitation exercises</li></ul><p><u>Prerequisites</u>: Basic knowledge of Arabic alphabet recommended.</p>",
           skillLevel: "Beginner",
           duration: "8 weeks",
           numberOfLessons: 24,
@@ -153,9 +194,30 @@ export default function CourseOverviewPage() {
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
               About This Course
             </Typography>
-            <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
-              {course.description}
-            </Typography>
+            <Box 
+              sx={{ 
+                lineHeight: 1.7, 
+                mb: 3,
+                fontSize: "1rem",
+                "& p": { margin: "0.75em 0" },
+                "& p:first-of-type": { marginTop: 0 },
+                "& p:last-of-type": { marginBottom: 0 },
+                "& strong, & b": { fontWeight: "bold" },
+                "& em, & i": { fontStyle: "italic" },
+                "& u": { textDecoration: "underline" },
+                "& ul, & ol": { paddingLeft: "1.5em", margin: "0.75em 0" },
+                "& li": { margin: "0.25em 0" },
+                "& a": { 
+                  color: "primary.main", 
+                  textDecoration: "underline",
+                  "&:hover": { textDecoration: "none" }
+                },
+                "& br": { display: "block", margin: "0.25em 0", content: '""' }
+              }}
+              dangerouslySetInnerHTML={{ 
+                __html: sanitizeHtml(course.description || "")
+              }}
+            />
 
             {/* Learning Objectives */}
             {course.learningObjectives && (

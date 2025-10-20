@@ -16,7 +16,12 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Pagination
+  Pagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import courseReviewService from "@/services/course-review.service";
@@ -24,6 +29,27 @@ import StarIcon from "@mui/icons-material/Star";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
+import {
+  Editor,
+  EditorProvider,
+  BtnBold,
+  BtnBulletList,
+  BtnClearFormatting,
+  BtnItalic,
+  BtnLink,
+  BtnNumberedList,
+  BtnRedo,
+  BtnStrikeThrough,
+  BtnStyles,
+  BtnUnderline,
+  BtnUndo,
+  HtmlButton,
+  Separator,
+  Toolbar,
+} from "react-simple-wysiwyg";
 
 export default function CourseReviewsPage() {
   const params = useParams();
@@ -39,6 +65,14 @@ export default function CourseReviewsPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 5;
+  
+  // Edit review states
+  const [editingReview, setEditingReview] = useState(null);
+  const [editReviewDialogOpen, setEditReviewDialogOpen] = useState(false);
+  const [editReviewData, setEditReviewData] = useState({
+    rating: 0,
+    comment: ""
+  });
 
   useEffect(() => {
     fetchCourseReviews();
@@ -217,6 +251,47 @@ export default function CourseReviewsPage() {
     const startIndex = (currentPage - 1) * reviewsPerPage;
     const endIndex = startIndex + reviewsPerPage;
     return reviews.slice(startIndex, endIndex);
+  };
+
+  // Edit Review Functions
+  const handleEditReview = (review) => {
+    setEditingReview(review);
+    setEditReviewData({
+      rating: review.rating,
+      comment: review.comment
+    });
+    setEditReviewDialogOpen(true);
+  };
+
+  const handleSaveReview = async () => {
+    try {
+      const updatedReview = {
+        ...editingReview,
+        rating: editReviewData.rating,
+        comment: editReviewData.comment
+      };
+
+      await courseReviewService.updateCourseReview(editingReview.id, updatedReview);
+      
+      // Update local state
+      setReviews(prev => prev.map(review => 
+        review.id === editingReview.id ? updatedReview : review
+      ));
+      
+      setEditReviewDialogOpen(false);
+      setEditingReview(null);
+    } catch (error) {
+      console.error("Error updating review:", error);
+    }
+  };
+
+  const handleCancelEditReview = () => {
+    setEditReviewDialogOpen(false);
+    setEditingReview(null);
+    setEditReviewData({
+      rating: 0,
+      comment: ""
+    });
   };
 
   const { averageRating, totalReviews, ratingDistribution } = calculateReviewStats();
@@ -411,6 +486,15 @@ export default function CourseReviewsPage() {
                       </Typography>
                     </Box>
                   </Box>
+                  
+                  {/* Edit Button */}
+                  <IconButton
+                    size="small"
+                    onClick={() => handleEditReview(review)}
+                    sx={{ ml: "auto" }}
+                  >
+                    <EditIcon />
+                  </IconButton>
                 </Box>
 
                 <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
@@ -457,6 +541,61 @@ export default function CourseReviewsPage() {
           )}
         </Grid>
       </Grid>
+
+      {/* Edit Review Dialog */}
+      <Dialog open={editReviewDialogOpen} onClose={handleCancelEditReview} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Review</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1 }}>Rating</Typography>
+            <Rating
+              value={editReviewData.rating}
+              onChange={(event, newValue) => {
+                setEditReviewData(prev => ({ ...prev, rating: newValue || 0 }));
+              }}
+              size="large"
+              sx={{ mb: 2 }}
+            />
+            
+            <Typography variant="h6" sx={{ mb: 1 }}>Review Comment</Typography>
+            <EditorProvider>
+              <Editor
+                value={editReviewData.comment}
+                onChange={(e) => setEditReviewData(prev => ({ ...prev, comment: e.target.value }))}
+                style={{ minHeight: "200px" }}
+                className="rsw-editor"
+              >
+                <Toolbar>
+                  <BtnUndo />
+                  <BtnRedo />
+                  <Separator />
+                  <BtnBold />
+                  <BtnItalic />
+                  <BtnUnderline />
+                  <BtnStrikeThrough />
+                  <Separator />
+                  <BtnNumberedList />
+                  <BtnBulletList />
+                  <Separator />
+                  <BtnLink />
+                  <BtnClearFormatting />
+                  <HtmlButton />
+                  <Separator />
+                  <BtnStyles />
+                </Toolbar>
+              </Editor>
+            </EditorProvider>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelEditReview} startIcon={<CancelIcon />}>
+            Cancel
+          </Button>
+          <Button onClick={handleSaveReview} variant="contained" startIcon={<SaveIcon />}>
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

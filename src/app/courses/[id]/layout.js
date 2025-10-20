@@ -2,10 +2,104 @@
 import { useState, useEffect } from "react";
 import { Box, Typography, Tabs, Tab, Card, Chip, Rating } from "@mui/material";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import courseService from "@/services/course.service";
 import PageTitle from "@/components/Common/PageTitle";
 import Link from "next/link";
+
+// Simple HTML sanitization function for course descriptions
+const sanitizeHtml = (html) => {
+  if (!html) return "";
+  
+  // Basic client-side sanitization - only run on client
+  if (typeof window === 'undefined') return html;
+  
+  try {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Remove script tags and event handlers
+    const scripts = tempDiv.querySelectorAll('script');
+    scripts.forEach(script => script.remove());
+    
+    // Remove on* event attributes and dangerous tags
+    const allElements = tempDiv.querySelectorAll('*');
+    allElements.forEach(element => {
+      // Remove dangerous tags
+      if (['script', 'iframe', 'object', 'embed', 'form'].includes(element.tagName.toLowerCase())) {
+        element.remove();
+        return;
+      }
+      
+      // Remove event handler attributes
+      Array.from(element.attributes).forEach(attr => {
+        if (attr.name.toLowerCase().startsWith('on') || 
+            ['javascript:', 'vbscript:', 'data:'].some(prefix => 
+              attr.value.toLowerCase().includes(prefix))) {
+          element.removeAttribute(attr.name);
+        }
+      });
+    });
+    
+    return tempDiv.innerHTML;
+  } catch (error) {
+    console.warn('HTML sanitization failed:', error);
+    return html; // Fallback to original HTML
+  }
+};
+
+// Extract first paragraph from HTML content
+const getFirstParagraph = (html) => {
+  if (!html) return "";
+  
+  // Client-side only
+  if (typeof window === 'undefined') return html;
+  
+  try {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Try to find the first paragraph tag
+    const firstP = tempDiv.querySelector('p');
+    if (firstP) {
+      return firstP.outerHTML;
+    }
+    
+    // If no paragraph tags, look for the first text content before any block elements
+    const textNodes = [];
+    const walker = document.createTreeWalker(
+      tempDiv,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+    
+    let node;
+    while (node = walker.nextNode()) {
+      const text = node.textContent.trim();
+      if (text) {
+        textNodes.push(text);
+        break; // Only get first meaningful text
+      }
+    }
+    
+    if (textNodes.length > 0) {
+      return `<p>${textNodes[0]}</p>`;
+    }
+    
+    // Fallback: return first 150 characters
+    const textContent = tempDiv.textContent || tempDiv.innerText || "";
+    const truncated = textContent.substring(0, 150).trim();
+    return truncated ? `<p>${truncated}${truncated.length === 150 ? '...' : ''}</p>` : "";
+    
+  } catch (error) {
+    console.warn('First paragraph extraction failed:', error);
+    // Fallback: return first 150 characters of plain text
+    const plainText = html.replace(/<[^>]*>/g, '');
+    const truncated = plainText.substring(0, 150).trim();
+    return truncated ? `<p>${truncated}${truncated.length === 150 ? '...' : ''}</p>` : "";
+  }
+};
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -30,6 +124,7 @@ function a11yProps(index) {
 
 export default function CourseLayout({ children }) {
   const params = useParams();
+  const pathname = usePathname();
   const courseId = params.id;
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,17 +133,16 @@ export default function CourseLayout({ children }) {
 
   // Determine current tab based on pathname
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path.includes('/curriculum')) {
+    if (pathname.includes('/curriculum')) {
       setTabValue(1);
-    } else if (path.includes('/reviews')) {
+    } else if (pathname.includes('/reviews')) {
       setTabValue(2);
-    } else if (path.includes('/teachers')) {
+    } else if (pathname.includes('/teachers')) {
       setTabValue(3);
     } else {
       setTabValue(0); // Overview
     }
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     fetchCourseDetails();
@@ -65,7 +159,7 @@ export default function CourseLayout({ children }) {
         const sampleCourse = {
           id: parseInt(courseId),
           title: "Quran Recitation Basics",
-          description: "Learn the fundamentals of Quran recitation with proper Tajweed rules and pronunciation techniques.",
+          description: "<p>Learn the <strong>fundamentals</strong> of Quran recitation with proper <em>Tajweed rules</em> and pronunciation techniques.</p><p>This comprehensive course includes:</p><ul><li>Basic Arabic pronunciation</li><li>Tajweed rules and application</li><li>Practical recitation exercises</li></ul><p><u>Prerequisites</u>: Basic knowledge of Arabic alphabet recommended.</p>",
           skillLevel: "Beginner",
           duration: "8 weeks",
           numberOfLessons: 24,
@@ -154,9 +248,31 @@ export default function CourseLayout({ children }) {
               {course.title}
             </Typography>
             
-            <Typography variant="body1" sx={{ mb: 2, color: "text.secondary" }}>
-              {course.description}
-            </Typography>
+            <Box 
+              sx={{ 
+                mb: 2, 
+                color: "text.secondary",
+                fontSize: "1rem",
+                lineHeight: 1.5,
+                "& p": { margin: "0.5em 0" },
+                "& p:first-of-type": { marginTop: 0 },
+                "& p:last-of-type": { marginBottom: 0 },
+                "& strong, & b": { fontWeight: "bold" },
+                "& em, & i": { fontStyle: "italic" },
+                "& u": { textDecoration: "underline" },
+                "& ul, & ol": { paddingLeft: "1.5em", margin: "0.5em 0" },
+                "& li": { margin: "0.25em 0" },
+                "& a": { 
+                  color: "primary.main", 
+                  textDecoration: "underline",
+                  "&:hover": { textDecoration: "none" }
+                },
+                "& br": { display: "block", margin: "0.25em 0", content: '""' }
+              }}
+              dangerouslySetInnerHTML={{ 
+                __html: sanitizeHtml(getFirstParagraph(course.description || ""))
+              }}
+            />
 
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 2 }}>
               <Chip 

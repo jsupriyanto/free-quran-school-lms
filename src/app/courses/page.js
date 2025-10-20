@@ -47,6 +47,24 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
+import {
+  Editor,
+  EditorProvider,
+  BtnBold,
+  BtnBulletList,
+  BtnClearFormatting,
+  BtnItalic,
+  BtnLink,
+  BtnNumberedList,
+  BtnRedo,
+  BtnStrikeThrough,
+  BtnStyles,
+  BtnUnderline,
+  BtnUndo,
+  HtmlButton,
+  Separator,
+  Toolbar,
+} from "react-simple-wysiwyg";
 
 // Styled components
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -950,19 +968,44 @@ export default function CoursesPage() {
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Description
               </Typography>
-              <TextField
-                fullWidth
-                label="Course Description *"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                error={!!formErrors.description}
-                helperText={formErrors.description}
-                multiline
-                rows={4}
-                sx={{ mb: 2 }}
-                placeholder="Enter detailed course description"
-              />
+              <EditorProvider>
+                <Editor
+                  value={formData.description}
+                  onChange={(e) => handleInputChange({
+                    target: {
+                      name: 'description',
+                      value: e.target.value
+                    }
+                  })}
+                  style={{ minHeight: "200px" }}
+                  className="rsw-editor"
+                  placeholder="Enter detailed course description"
+                >
+                  <Toolbar>
+                    <BtnUndo />
+                    <BtnRedo />
+                    <Separator />
+                    <BtnBold />
+                    <BtnItalic />
+                    <BtnUnderline />
+                    <BtnStrikeThrough />
+                    <Separator />
+                    <BtnNumberedList />
+                    <BtnBulletList />
+                    <Separator />
+                    <BtnLink />
+                    <BtnClearFormatting />
+                    <HtmlButton />
+                    <Separator />
+                    <BtnStyles />
+                  </Toolbar>
+                </Editor>
+              </EditorProvider>
+              {formErrors.description && (
+                <Typography variant="caption" color="error" sx={{ mt: 1, display: "block" }}>
+                  {formErrors.description}
+                </Typography>
+              )}
             </Grid>
 
             {/* Category - Full width */}

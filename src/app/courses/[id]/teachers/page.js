@@ -21,7 +21,9 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider
+  Divider,
+  TextField,
+  IconButton
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import courseTeacherService from "@/services/course-teacher.service";
@@ -34,6 +36,26 @@ import WorkIcon from "@mui/icons-material/Work";
 import LanguageIcon from "@mui/icons-material/Language";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
+import {
+  Editor,
+  EditorProvider,
+  BtnBold,
+  BtnBulletList,
+  BtnClearFormatting,
+  BtnItalic,
+  BtnLink,
+  BtnNumberedList,
+  BtnRedo,
+  BtnStrikeThrough,
+  BtnStyles,
+  BtnUnderline,
+  BtnUndo,
+  HtmlButton,
+  Separator,
+  Toolbar,
+} from "react-simple-wysiwyg";
 
 export default function CourseTeachersPage() {
   const params = useParams();
@@ -44,6 +66,15 @@ export default function CourseTeachersPage() {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [selectedRole, setSelectedRole] = useState("instructor");
+  
+  // Edit teacher states
+  const [editingTeacher, setEditingTeacher] = useState(null);
+  const [editTeacherDialogOpen, setEditTeacherDialogOpen] = useState(false);
+  const [editTeacherData, setEditTeacherData] = useState({
+    bio: "",
+    specialization: "",
+    role: "instructor"
+  });
 
   useEffect(() => {
     fetchCourseTeachers();
@@ -68,7 +99,8 @@ export default function CourseTeachersPage() {
             isActive: true,
             teacher: {
               id: 1,
-              fullName: "Sheikh Ahmad Ali",
+              firstName: "Sheikh Ahmad",
+              lastName: "Ali",
               email: "sheikh.ahmad@example.com",
               phoneNumber: "+1234567890",
               profilePictureUrl: "/images/teacher1.jpg",
@@ -90,7 +122,8 @@ export default function CourseTeachersPage() {
             isActive: true,
             teacher: {
               id: 2,
-              fullName: "Ustadha Fatima Hassan",
+              firstName: "Ustadha Fatima",
+              lastName: "Hassan",
               email: "ustadha.fatima@example.com",
               phoneNumber: "+1234567891",
               profilePictureUrl: "/images/teacher2.jpg",
@@ -126,14 +159,16 @@ export default function CourseTeachersPage() {
         const sampleAvailable = [
           {
             id: 3,
-            fullName: "Dr. Omar Abdullah",
+            firstName: "Dr. Omar",
+            lastName: "Abdullah",
             email: "dr.omar@example.com",
             specializations: ["Advanced Tajweed", "Quranic Sciences"],
             experienceYears: 12
           },
           {
             id: 4,
-            fullName: "Ustadh Yusuf Ibrahim",
+            firstName: "Ustadh Yusuf",
+            lastName: "Ibrahim",
             email: "ustadh.yusuf@example.com",
             specializations: ["Arabic Grammar", "Tafseer"],
             experienceYears: 10
@@ -216,6 +251,67 @@ export default function CourseTeachersPage() {
     }
   };
 
+  // Edit Teacher Functions
+  const handleEditTeacher = (courseTeacher) => {
+    setEditingTeacher(courseTeacher);
+    setEditTeacherData({
+      bio: courseTeacher.teacher.bio || "",
+      specialization: courseTeacher.teacher.specialization || "",
+      role: courseTeacher.role
+    });
+    setEditTeacherDialogOpen(true);
+  };
+
+  const handleSaveTeacher = async () => {
+    try {
+      // Update teacher info
+      if (editTeacherData.bio !== editingTeacher.teacher.bio || 
+          editTeacherData.specialization !== editingTeacher.teacher.specialization) {
+        await teacherService.updateTeacher(editingTeacher.teacher.id, {
+          bio: editTeacherData.bio,
+          specialization: editTeacherData.specialization
+        });
+      }
+
+      // Update role if changed
+      if (editTeacherData.role !== editingTeacher.role) {
+        await courseTeacherService.updateTeacherRoleInCourse(editingTeacher.id, {
+          role: editTeacherData.role
+        });
+      }
+      
+      // Update local state
+      setCourseTeachers(prev => prev.map(ct => 
+        ct.id === editingTeacher.id 
+          ? {
+              ...ct,
+              role: editTeacherData.role,
+              teacher: {
+                ...ct.teacher,
+                bio: editTeacherData.bio,
+                specialization: editTeacherData.specialization
+              }
+            }
+          : ct
+      ));
+      
+      setEditTeacherDialogOpen(false);
+      setEditingTeacher(null);
+    } catch (error) {
+      console.error("Error updating teacher:", error);
+    }
+  };
+
+  const handleCancelEditTeacher = () => {
+    setEditTeacherDialogOpen(false);
+    setEditingTeacher(null);
+    setEditTeacherData({
+      bio: "",
+      specialization: "",
+      role: "instructor"
+    });
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -254,13 +350,13 @@ export default function CourseTeachersPage() {
                 <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
                   <Avatar
                     src={teacher.profilePictureUrl}
-                    alt={teacher.fullName}
+                    alt={teacher.firstName}
                     sx={{ width: 80, height: 80 }}
                   />
                   <Box sx={{ flex: 1 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
                       <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        {teacher.fullName}
+                        {teacher.firstName} {teacher.lastName}
                       </Typography>
                       <Chip 
                         label={courseTeacher.role} 
@@ -390,6 +486,14 @@ export default function CourseTeachersPage() {
                     </Select>
                   </FormControl>
 
+                  <IconButton
+                    size="small"
+                    onClick={() => handleEditTeacher(courseTeacher)}
+                    sx={{ color: "primary.main" }}
+                  >
+                    <EditIcon />
+                  </IconButton>
+
                   <Button
                     size="small"
                     color="error"
@@ -443,7 +547,7 @@ export default function CourseTeachersPage() {
                 {availableTeachers.map((teacher) => (
                   <MenuItem key={teacher.id} value={teacher.id}>
                     <Box>
-                      <Typography variant="body1">{teacher.fullName}</Typography>
+                      <Typography variant="body1">{teacher.firstName} {teacher.lastName}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         {teacher.specializations?.join(", ")} • {teacher.experienceYears} years exp.
                       </Typography>
@@ -476,6 +580,73 @@ export default function CourseTeachersPage() {
             disabled={!selectedTeacher || !selectedRole}
           >
             Assign Teacher
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Teacher Dialog */}
+      <Dialog open={editTeacherDialogOpen} onClose={handleCancelEditTeacher} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Teacher Information</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Role in Course</InputLabel>
+              <Select
+                value={editTeacherData.role}
+                label="Role in Course"
+                onChange={(e) => setEditTeacherData(prev => ({ ...prev, role: e.target.value }))}
+              >
+                <MenuItem value="Lead Instructor">Lead Instructor</MenuItem>
+                <MenuItem value="Assistant Instructor">Assistant Instructor</MenuItem>
+                <MenuItem value="Teaching Assistant">Teaching Assistant</MenuItem>
+                <MenuItem value="Guest Lecturer">Guest Lecturer</MenuItem>
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              label="Specialization"
+              value={editTeacherData.specialization}
+              onChange={(e) => setEditTeacherData(prev => ({ ...prev, specialization: e.target.value }))}
+              sx={{ mb: 2 }}
+            />
+            
+            <Typography variant="h6" sx={{ mb: 1 }}>Teacher Bio</Typography>
+            <EditorProvider>
+              <Editor
+                value={editTeacherData.bio}
+                onChange={(e) => setEditTeacherData(prev => ({ ...prev, bio: e.target.value }))}
+                style={{ minHeight: "200px" }}
+                className="rsw-editor"
+              >
+                <Toolbar>
+                  <BtnUndo />
+                  <BtnRedo />
+                  <Separator />
+                  <BtnBold />
+                  <BtnItalic />
+                  <BtnUnderline />
+                  <BtnStrikeThrough />
+                  <Separator />
+                  <BtnNumberedList />
+                  <BtnBulletList />
+                  <Separator />
+                  <BtnLink />
+                  <BtnClearFormatting />
+                  <HtmlButton />
+                  <Separator />
+                  <BtnStyles />
+                </Toolbar>
+              </Editor>
+            </EditorProvider>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelEditTeacher} startIcon={<CancelIcon />}>
+            Cancel
+          </Button>
+          <Button onClick={handleSaveTeacher} variant="contained" startIcon={<SaveIcon />}>
+            Save Changes
           </Button>
         </DialogActions>
       </Dialog>
