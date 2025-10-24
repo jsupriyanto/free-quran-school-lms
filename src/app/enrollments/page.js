@@ -278,6 +278,7 @@ export default function EnrollmentsPage() {
   const [courses, setCourses] = React.useState([]);
   const [students, setStudents] = React.useState([]);
   const [statusFilter, setStatusFilter] = React.useState("All");
+  const [courseFilter, setCourseFilter] = React.useState("All");
 
   const { globalSearchTerm } = useSearch();
   const router = useRouter();
@@ -286,7 +287,7 @@ export default function EnrollmentsPage() {
     userId: "",
     courseId: "",
     enrolledAt: "",
-    status: "Active",
+    status: "active",
     progress: 0,
     completedLessons: 0,
     totalLessons: 0,
@@ -347,7 +348,7 @@ export default function EnrollmentsPage() {
       userId: "",
       courseId: "",
       enrolledAt: "",
-      status: "Active",
+      status: "active",
       progress: 0,
       completedLessons: 0,
       totalLessons: 0,
@@ -388,6 +389,11 @@ export default function EnrollmentsPage() {
       filtered = filtered.filter(enrollment => enrollment.status === statusFilter);
     }
 
+    // Apply course filter
+    if (courseFilter !== "All") {
+      filtered = filtered.filter(enrollment => enrollment.courseId.toString() === courseFilter);
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       let aValue = a[orderBy];
@@ -411,7 +417,7 @@ export default function EnrollmentsPage() {
     });
 
     setFilteredEnrollments(filtered);
-  }, [enrollments, globalSearchTerm, orderBy, order, statusFilter]);
+  }, [enrollments, globalSearchTerm, orderBy, order, statusFilter, courseFilter]);
 
   const handleSort = (column) => {
     const isAsc = orderBy === column && order === "asc";
@@ -582,6 +588,12 @@ export default function EnrollmentsPage() {
     fetchEnrollments();
   };
 
+  const handleClearFilters = () => {
+    setStatusFilter("All");
+    setCourseFilter("All");
+    setPage(0);
+  };
+
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case "active":
@@ -648,6 +660,22 @@ export default function EnrollmentsPage() {
             </Button>
 
             <Button
+              onClick={handleClearFilters}
+              variant="outlined"
+              sx={{
+                textTransform: "capitalize",
+                borderRadius: "7px",
+                fontWeight: "500",
+                fontSize: "13px",
+                padding: "6px 13px",
+              }}
+              color="secondary"
+              startIcon={<ClearIcon />}
+            >
+              Clear Filters
+            </Button>
+
+            <Button
               onClick={() => handleOpenModal()}
               variant="outlined"
               sx={{
@@ -681,12 +709,50 @@ export default function EnrollmentsPage() {
               value={statusFilter}
               label="Status"
               onChange={(e) => setStatusFilter(e.target.value)}
+              sx={statusFilter !== "All" ? { 
+                backgroundColor: 'action.selected',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'primary.main',
+                  borderWidth: '2px'
+                }
+              } : {}}
             >
               <MenuItem value="All">All</MenuItem>
-              <MenuItem value="Active">Active</MenuItem>
-              <MenuItem value="Completed">Completed</MenuItem>
-              <MenuItem value="On Hold">On Hold</MenuItem>
-              <MenuItem value="Cancelled">Cancelled</MenuItem>
+              <MenuItem value="active">Active</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+              <MenuItem value="on hold">On Hold</MenuItem>
+              <MenuItem value="cancelled">Cancelled</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <FormControl sx={{ minWidth: 200 }} size="small">
+            <InputLabel>Course</InputLabel>
+            <Select
+              value={courseFilter}
+              label="Course"
+              onChange={(e) => setCourseFilter(e.target.value)}
+              sx={courseFilter !== "All" ? { 
+                backgroundColor: 'action.selected',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'primary.main',
+                  borderWidth: '2px'
+                }
+              } : {}}
+            >
+              <MenuItem value="All">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <SchoolIcon fontSize="small" />
+                  All Courses
+                </Box>
+              </MenuItem>
+              {courses.map((course) => (
+                <MenuItem key={course.id} value={course.id.toString()}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SchoolIcon fontSize="small" color="primary" />
+                    {course.title}
+                  </Box>
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Box>
@@ -875,12 +941,15 @@ export default function EnrollmentsPage() {
                         <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
                           <Avatar
                             src={enrollment.studentAvatar}
-                            alt={enrollment.studentName}
+                            alt={enrollment.studentName || (enrollment.user ? `${enrollment.user.firstName} ${enrollment.user.lastName}` : '')}
                             sx={{ width: 40, height: 40 }}
                           />
                           <Box>
                             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {enrollment.user.firstName} {enrollment.user.lastName}
+                              {enrollment.studentName || (enrollment.user ? `${enrollment.user.firstName} ${enrollment.user.lastName}` : 'Unknown')}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {enrollment.studentEmail || (enrollment.user ? enrollment.user.email : '')}
                             </Typography>
                           </Box>
                         </Box>
@@ -889,7 +958,7 @@ export default function EnrollmentsPage() {
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {enrollment.course.title}
+                            {enrollment.courseName || (enrollment.course ? enrollment.course.title : 'Unknown Course')}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -1146,10 +1215,10 @@ export default function EnrollmentsPage() {
                       setFormData({ ...formData, status: e.target.value })
                     }
                   >
-                    <MenuItem value="Active">Active</MenuItem>
-                    <MenuItem value="Completed">Completed</MenuItem>
-                    <MenuItem value="On Hold">On Hold</MenuItem>
-                    <MenuItem value="Cancelled">Cancelled</MenuItem>
+                    <MenuItem value="active">Active</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="on hold">On Hold</MenuItem>
+                    <MenuItem value="cancelled">Cancelled</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
