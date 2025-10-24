@@ -41,9 +41,13 @@ export const authOptions = {
           if (response && response.data && response.data.accessToken) {
             // Store user data in the JWT token (server-side)
             token.user = response.data;
+          } else {
+            console.error("No access token received from auth service");
           }
         } catch (error) {
           console.error("OAuth sign-in error:", error);
+          // Don't store user data if the auth service call fails
+          token.user = null;
         }
       }
 
@@ -54,7 +58,7 @@ export const authOptions = {
     async session({ session, token }) {
       // Pass user data from JWT token to session
       if (token && token.user) {
-        session.user = token.user;
+        session.user = { ...session.user, ...token.user };
       }
       return session;
     },

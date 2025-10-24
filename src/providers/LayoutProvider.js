@@ -19,12 +19,18 @@ const LayoutProvider = ({ children }) => {
     <>
       <div className={`main-wrapper-content ${active && "active"}`}>
         {!(
+          pathname === "/authentication/sign-in" ||
           pathname.endsWith("/authentication/sign-in/") ||
-            pathname.endsWith("/authentication/sign-up/") ||
-            pathname.endsWith("/authentication/forgot-password/") ||
-            pathname.endsWith("/authentication/lock-screen/") ||
-            pathname.endsWith("/authentication/confirm-mail/") ||
-            pathname.endsWith("/authentication/logout/") 
+          pathname === "/authentication/sign-up" ||
+          pathname.endsWith("/authentication/sign-up/") ||
+          pathname === "/authentication/forgot-password" ||
+          pathname.endsWith("/authentication/forgot-password/") ||
+          pathname === "/authentication/lock-screen" ||
+          pathname.endsWith("/authentication/lock-screen/") ||
+          pathname === "/authentication/confirm-mail" ||
+          pathname.endsWith("/authentication/confirm-mail/") ||
+          pathname === "/authentication/logout" ||
+          pathname.endsWith("/authentication/logout/") 
         ) && (
           <>
             <TopNavbar toogleActive={toogleActive} />
@@ -36,11 +42,17 @@ const LayoutProvider = ({ children }) => {
         <div className="main-content">
           {children}
           {!(
+            pathname === "/authentication/sign-in" ||
             pathname.endsWith("/authentication/sign-in/") ||
+            pathname === "/authentication/sign-up" ||
             pathname.endsWith("/authentication/sign-up/") ||
+            pathname === "/authentication/forgot-password" ||
             pathname.endsWith("/authentication/forgot-password/") ||
+            pathname === "/authentication/lock-screen" ||
             pathname.endsWith("/authentication/lock-screen/") ||
+            pathname === "/authentication/confirm-mail" ||
             pathname.endsWith("/authentication/confirm-mail/") ||
+            pathname === "/authentication/logout" ||
             pathname.endsWith("/authentication/logout/") 
           ) && <Footer />}
         </div>

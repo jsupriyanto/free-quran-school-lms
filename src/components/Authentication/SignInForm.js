@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Grid from "@mui/material/Grid";
 import { Typography } from "@mui/material";
@@ -17,28 +17,48 @@ import { useRouter } from "next/navigation";
 
 const SignInForm = () => {
   const router = useRouter();
+  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
+  const [isFormLoading, setIsFormLoading] = useState(false);
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    setIsFormLoading(true);
     const data = new FormData(event.currentTarget);
     
     authService.signin(data.get("email"), data.get("password"))
       .then(response => {
         router.push('/');
-      }
-      )
+      })
       .catch(error => {
         console.error("Login failed:", error);
         alert("Login failed: " + (error.response?.data?.message || error.message));
+      })
+      .finally(() => {
+        setIsFormLoading(false);
       });
   };
 
   // use next-auth for authentication with google
-  const handleSignIn = (provider) => {
-    signIn(provider, { redirect: false })
-      .catch((error) => {
-        console.error("OAuth Sign-in failed:", error);
-        alert("OAuth Sign-in failed: " + (error.response?.data?.message || error.message));
-      });
+  const handleSignIn = async (provider) => {
+    if (isOAuthLoading) return; // Prevent multiple clicks
+    
+    setIsOAuthLoading(true);
+    try {
+      const result = await signIn(provider, { redirect: false });
+      
+      if (result?.error) {
+        console.error("OAuth Sign-in failed:", result.error);
+        alert("OAuth Sign-in failed: " + result.error);
+      } else if (result?.ok) {
+        // Let the AuthProvider handle the redirect
+        console.log("OAuth sign-in successful");
+        // Don't call setIsOAuthLoading(false) here as the page will redirect
+      }
+    } catch (error) {
+      console.error("OAuth Sign-in failed:", error);
+      alert("OAuth Sign-in failed: " + (error.response?.data?.message || error.message));
+      setIsOAuthLoading(false);
+    }
   };
 
   return (
@@ -86,12 +106,12 @@ const SignInForm = () => {
               >
                 <Link href="#" className={styles.googleBtn} onClick={() => handleSignIn("google")}>
                   <Image src="/images/google-icon.png" width={20} height={20} alt="Google icon" />
-                  Sign in with Google
+                  {isOAuthLoading ? "Signing in..." : "Sign in with Google"}
                 </Link>
 
                 <Link href="#" className={styles.fbBtn} onClick={() => handleSignIn("facebook")}>
                   <Image src="/images/fb-icon.png" width={20} height={20} alt="Facebook icon" />
-                  Sign in with Facebook
+                  {isOAuthLoading ? "Signing in..." : "Sign in with Facebook"}
                 </Link>
               </Box>
 
@@ -189,6 +209,7 @@ const SignInForm = () => {
                   type="submit"
                   fullWidth
                   variant="contained"
+                  disabled={isFormLoading || isOAuthLoading}
                   sx={{
                     mt: 2,
                     textTransform: "capitalize",
@@ -199,7 +220,7 @@ const SignInForm = () => {
                     color: "#fff !important",
                   }}
                 >
-                  Sign In
+                  {isFormLoading ? "Signing In..." : "Sign In"}
                 </Button>
               </Box>
             </Box>
