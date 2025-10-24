@@ -15,6 +15,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import TeacherIcon from "@mui/icons-material/Person";
 import CourseIcon from "@mui/icons-material/PlayLesson";
 import EnrollmentIcon from "@mui/icons-material/School";
+import AttendanceIcon from "@mui/icons-material/PresentToAll";
 
 export const sidebarDataEN = [
 	{
@@ -51,6 +52,12 @@ export const sidebarDataEN = [
 		title: "Enrollments",
 		path: "/enrollments/",
 		icon: <EnrollmentIcon />,
+		subNav: [],
+	},
+	{
+		title: "Attendances",
+		path: "/attendances/",
+		icon: <AttendanceIcon />,
 		subNav: [],
 	},
 	// {
@@ -397,6 +404,18 @@ export const sidebarDataAR = [
 		title: "الدورات",
 		path: "/courses/",
 		icon: <CourseIcon />,
+		subNav: [],
+	},
+	{
+		title: "التسجيلات",
+		path: "/enrollments/",
+		icon: <EnrollmentIcon />,
+		subNav: [],
+	},
+	{
+		title: "الحضور",
+		path: "/attendances/",
+		icon: <AttendanceIcon />,
 		subNav: [],
 	},
 	{
@@ -760,6 +779,18 @@ export const sidebarDataDE = [
 		title: "Kurse",
 		path: "/courses/",
 		icon: <CourseIcon />,
+		subNav: [],
+	},
+	{
+		title: "Anmeldungen",
+		path: "/enrollments/",
+		icon: <EnrollmentIcon />,
+		subNav: [],
+	},
+	{
+		title: "Anwesenheit",
+		path: "/attendances/",
+		icon: <AttendanceIcon />,
 		subNav: [],
 	},
 	{
