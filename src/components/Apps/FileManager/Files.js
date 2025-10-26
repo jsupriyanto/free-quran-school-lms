@@ -90,10 +90,11 @@ const Files = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
+    // Handle form submission here
+    const formData = {
       email: data.get("email"),
       password: data.get("password"),
-    });
+    };
   };
 
   return (

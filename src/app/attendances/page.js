@@ -70,88 +70,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import attendanceService from "@/services/attendance.service";
 import courseService from "@/services/course.service";
 import enrollmentService from "@/services/enrollment.service";
+import courseTeacherService from "@/services/course-teacher.service";
 import PageTitle from "@/components/Common/PageTitle";
 import { useSearch } from "@/contexts/SearchContext";
-
-// Sample data for development/fallback
-const sampleSessions = [
-  {
-    id: 1,
-    courseId: 4,
-    courseName: "Arabic Language Basics",
-    sessionDate: "2025-10-23T10:00:00.000Z",
-    sessionTime: "10:00 AM",
-    duration: 60,
-    topic: "Introduction to Arabic Letters",
-    status: "completed",
-    totalStudents: 15,
-    presentStudents: 12,
-    absentStudents: 3,
-    lateStudents: 1
-  },
-  {
-    id: 2,
-    courseId: 5,
-    courseName: "Hifz for Adults: Juz 30",
-    sessionDate: "2025-10-23T14:00:00.000Z", 
-    sessionTime: "2:00 PM",
-    duration: 90,
-    topic: "Surah An-Nas Review",
-    status: "active",
-    totalStudents: 8,
-    presentStudents: 0,
-    absentStudents: 0,
-    lateStudents: 0
-  }
-];
-
-const sampleAttendanceRecords = [
-  {
-    id: 1,
-    sessionId: 1,
-    studentId: 101,
-    studentName: "Ahmed Hassan",
-    studentEmail: "ahmed.hassan@example.com",
-    studentAvatar: "https://i.pravatar.cc/150?img=1",
-    status: "present",
-    checkInTime: "2025-10-23T10:05:00.000Z",
-    notes: "",
-    markedBy: "Teacher Admin"
-  },
-  {
-    id: 2,
-    sessionId: 1,
-    studentId: 102,
-    studentName: "Fatima Al-Zahra",
-    studentEmail: "fatima.zahra@example.com", 
-    studentAvatar: "https://i.pravatar.cc/150?img=2",
-    status: "late",
-    checkInTime: "2025-10-23T10:15:00.000Z",
-    notes: "Traffic delay",
-    markedBy: "Teacher Admin"
-  },
-  {
-    id: 3,
-    sessionId: 1,
-    studentId: 103,
-    studentName: "Omar Abdullah",
-    studentEmail: "omar.abdullah@example.com",
-    studentAvatar: "https://i.pravatar.cc/150?img=3",
-    status: "absent",
-    checkInTime: null,
-    notes: "Sick leave",
-    markedBy: "Teacher Admin"
-  }
-];
-
-const sampleCourses = [
-  { id: 4, title: "Arabic Language Basics" },
-  { id: 5, title: "Hifz for Adults: Juz 30" },
-  { id: 6, title: "IQRA: Learn to Read Quran" },
-  { id: 7, title: "Islamic Studies 101" },
-  { id: 8, title: "Tafsir of Surah Al-Fatiha" },
-  { id: 9, title: "Tajweed Level I" }
-];
 
 // Styled Components
 const StyledDialog = styled(Dialog)(({ theme }) => ({
@@ -179,6 +100,30 @@ const TabPanel = (props) => {
 };
 
 export default function AttendancePage() {
+  // Helper function to get current user
+  const getCurrentUser = () => {
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem("user");
+      if (userStr) return JSON.parse(userStr);
+    }
+    return null;
+  };
+
+  // Helper function to get teacher ID for a course
+  const getTeacherIdForCourse = async (courseId) => {
+    try {
+      const response = await courseTeacherService.getTeachersByCourseId(courseId);
+      if (response.data && response.data.length > 0) {
+        // Return the first teacher's ID (you can modify this logic as needed)
+        return response.data[0].teacherId || response.data[0].teacher?.id;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching teachers for course:", error);
+      return null;
+    }
+  };
+
   // State management
   const [activeTab, setActiveTab] = useState(0);
   const [courses, setCourses] = useState([]);
@@ -204,7 +149,7 @@ export default function AttendancePage() {
     sessionTime: dayjs(),
     duration: 60,
     topic: "",
-    notes: ""
+    description: ""
   });
   
   // Notifications
@@ -216,12 +161,38 @@ export default function AttendancePage() {
   
   const [actionMenu, setActionMenu] = useState(null);
   
+  // Dashboard statistics
+  const [dashboardStats, setDashboardStats] = useState({
+    totalSessions: 0,
+    activeStudents: 0,
+    averageAttendance: 0,
+    monthlyTrend: 0
+  });
+  const [attendanceOverview, setAttendanceOverview] = useState([]);
+  const [attendanceTrends, setAttendanceTrends] = useState([]);
+  
   const { globalSearchTerm } = useSearch();
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (!user) {
+      console.warn("No authenticated user found");
+      setSnackbar({
+        open: true,
+        message: "Please log in to access attendance management.",
+        severity: "warning"
+      });
+    }
+  }, []);
 
   // Fetch data
   useEffect(() => {
     fetchCourses();
     fetchSessions();
+    fetchDashboardStats();
+    fetchAttendanceOverview();
+    fetchAttendanceTrends();
   }, []);
 
   useEffect(() => {
@@ -235,14 +206,14 @@ export default function AttendancePage() {
     try {
       setLoading(true);
       const response = await courseService.getAll();
-      if (response.data && response.data.length > 0) {
+      if (response.data && Array.isArray(response.data)) {
         setCourses(response.data);
       } else {
-        setCourses(sampleCourses);
+        setCourses([]);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
-      setCourses(sampleCourses);
+      setCourses([]);
     } finally {
       setLoading(false);
     }
@@ -251,12 +222,27 @@ export default function AttendancePage() {
   const fetchSessions = async () => {
     try {
       setLoading(true);
-      // This would be the actual API call
-      // const response = await attendanceService.getAllSessions();
-      setSessions(sampleSessions);
+      // Try to get all sessions from API - we'll aggregate from all courses
+      const allSessions = [];
+      
+      // If we have courses, get sessions for each course
+      if (courses.length > 0) {
+        for (const course of courses) {
+          try {
+            const response = await attendanceService.getSessionsByCourse(course.id);
+            if (response.data && Array.isArray(response.data)) {
+              allSessions.push(...response.data);
+            }
+          } catch (courseError) {
+            console.warn(`Error fetching sessions for course ${course.id}:`, courseError);
+          }
+        }
+      }
+      
+      setSessions(allSessions);
     } catch (error) {
       console.error("Error fetching sessions:", error);
-      setSessions(sampleSessions);
+      setSessions([]);
     } finally {
       setLoading(false);
     }
@@ -265,11 +251,12 @@ export default function AttendancePage() {
   const fetchSessionsByCourse = async (courseId) => {
     try {
       setLoading(true);
-      // const response = await attendanceService.getSessionsByCourse(courseId);
-      const filteredSessions = sampleSessions.filter(session => 
-        session.courseId.toString() === courseId.toString()
-      );
-      setSessions(filteredSessions);
+      const response = await attendanceService.getSessionsByCourse(courseId);
+      if (response.data && Array.isArray(response.data)) {
+        setSessions(response.data);
+      } else {
+        setSessions([]);
+      }
     } catch (error) {
       console.error("Error fetching course sessions:", error);
       setSessions([]);
@@ -280,32 +267,87 @@ export default function AttendancePage() {
 
   const fetchEnrollmentsByCourse = async (courseId) => {
     try {
-      const response = await enrollmentService.getAllEnrollments();
+      setLoading(true);
+      // Try to use course-specific endpoint if available
+      let response;
+      if (enrollmentService.getByCourse) {
+        response = await enrollmentService.getByCourse(courseId);
+      } else {
+        // Fallback to getting all enrollments and filtering
+        response = await enrollmentService.getAllEnrollments();
+        if (response.data) {
+          const courseEnrollments = response.data.filter(enrollment => 
+            enrollment.courseId.toString() === courseId.toString()
+          );
+          setEnrollments(courseEnrollments);
+          return;
+        }
+      }
+      
       if (response.data) {
-        const courseEnrollments = response.data.filter(enrollment => 
-          enrollment.courseId.toString() === courseId.toString()
-        );
-        setEnrollments(courseEnrollments);
+        setEnrollments(response.data);
+      } else {
+        setEnrollments([]);
       }
     } catch (error) {
       console.error("Error fetching enrollments:", error);
       setEnrollments([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchAttendanceBySession = async (sessionId) => {
     try {
       setLoading(true);
-      // const response = await attendanceService.getAttendanceBySession(sessionId);
-      const sessionAttendance = sampleAttendanceRecords.filter(record => 
-        record.sessionId === sessionId
-      );
-      setAttendanceRecords(sessionAttendance);
+      const response = await attendanceService.getAttendanceBySession(sessionId);
+      if (response.data && Array.isArray(response.data)) {
+        setAttendanceRecords(response.data);
+      } else {
+        setAttendanceRecords([]);
+      }
     } catch (error) {
       console.error("Error fetching attendance:", error);
       setAttendanceRecords([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Dashboard statistics functions
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await attendanceService.getAttendanceStats();
+      if (response.data) {
+        setDashboardStats(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      // Keep default values
+    }
+  };
+
+  const fetchAttendanceOverview = async () => {
+    try {
+      const response = await attendanceService.getAttendanceOverview();
+      if (response.data) {
+        setAttendanceOverview(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching attendance overview:", error);
+      setAttendanceOverview([]);
+    }
+  };
+
+  const fetchAttendanceTrends = async () => {
+    try {
+      const response = await attendanceService.getAttendanceTrends();
+      if (response.data) {
+        setAttendanceTrends(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching attendance trends:", error);
+      setAttendanceTrends([]);
     }
   };
 
@@ -317,27 +359,76 @@ export default function AttendancePage() {
   const handleCreateSession = async () => {
     try {
       setLoading(true);
+      const currentUser = getCurrentUser();
+      
+      if (!currentUser) {
+        setSnackbar({
+          open: true,
+          message: "User authentication required. Please log in again.",
+          severity: "error"
+        });
+        return;
+      }
+
+      const userId = currentUser.id || currentUser.userId || currentUser._id;
+      
+      if (!userId) {
+        setSnackbar({
+          open: true,
+          message: "User ID not found. Please log in again.",
+          severity: "error"
+        });
+        console.error("User object missing ID:", currentUser);
+        return;
+      }
+
+      // Get teacher ID from course-teacher relationship
+      const courseTeacherId = await getTeacherIdForCourse(sessionForm.courseId);
+      
+      if (!courseTeacherId) {
+        setSnackbar({
+          open: true,
+          message: "No teacher assigned to this course. Please assign a teacher first.",
+          severity: "error"
+        });
+        return;
+      }
+      
       const sessionData = {
         ...sessionForm,
         sessionDate: sessionForm.sessionDate.toISOString(),
         sessionTime: sessionForm.sessionTime.format('HH:mm'),
+        teacherId: courseTeacherId,
+        createdBy: userId,
+        instructorId: courseTeacherId,
+        instructorName: currentUser.name || currentUser.username || currentUser.displayName || 'Unknown User',
       };
       
-      // const response = await attendanceService.createSession(sessionData);
+
       
-      // Simulate successful creation
-      const newSession = {
-        id: Date.now(),
-        ...sessionData,
-        courseName: courses.find(c => c.id.toString() === sessionData.courseId)?.title || "",
-        status: "active",
-        totalStudents: 0,
-        presentStudents: 0,
-        absentStudents: 0,
-        lateStudents: 0
-      };
+      const response = await attendanceService.createSession(sessionData);
       
-      setSessions([...sessions, newSession]);
+      if (response.data) {
+        // Use the response data from the API
+        const newSession = {
+          ...response.data,
+          courseName: courses.find(c => c.id.toString() === response.data.courseId)?.title || "",
+        };
+        setSessions([...sessions, newSession]);
+        
+        setSnackbar({
+          open: true,
+          message: "Session created successfully!",
+          severity: "success"
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Session created but no response data received",
+          severity: "warning"
+        });
+      }
+      
       setSessionDialogOpen(false);
       setSessionForm({
         courseId: "",
@@ -345,20 +436,21 @@ export default function AttendancePage() {
         sessionTime: dayjs(),
         duration: 60,
         topic: "",
-        notes: ""
+        description: ""
       });
       
-      setSnackbar({
-        open: true,
-        message: "Session created successfully!",
-        severity: "success"
-      });
+      // Refresh sessions list to get updated data from server
+      if (selectedCourse) {
+        fetchSessionsByCourse(selectedCourse);
+      } else {
+        fetchSessions();
+      }
       
     } catch (error) {
       console.error("Error creating session:", error);
       setSnackbar({
         open: true,
-        message: "Error creating session",
+        message: "Error creating session: " + (error.response?.data?.message || error.message),
         severity: "error"
       });
     } finally {
@@ -389,10 +481,76 @@ export default function AttendancePage() {
   const handleSaveAttendance = async () => {
     try {
       setLoading(true);
-      // const response = await attendanceService.bulkMarkAttendance({
-      //   sessionId: selectedSession,
-      //   records: attendanceRecords
-      // });
+      const currentUser = getCurrentUser();
+      
+      if (!currentUser) {
+        setSnackbar({
+          open: true,
+          message: "User authentication required. Please log in again.",
+          severity: "error"
+        });
+        return;
+      }
+
+      const userId = currentUser.id || currentUser.userId || currentUser._id;
+      
+      if (!userId) {
+        setSnackbar({
+          open: true,
+          message: "User ID not found. Please log in again.",
+          severity: "error"
+        });
+        return;
+      }
+
+      // Get the session to find its course and teacher
+      const currentSession = sessions.find(s => s.id === selectedSession);
+      if (!currentSession) {
+        setSnackbar({
+          open: true,
+          message: "Session not found.",
+          severity: "error"
+        });
+        return;
+      }
+
+      // Get teacher ID from course-teacher relationship
+      const courseTeacherId = await getTeacherIdForCourse(currentSession.courseId);
+      
+      if (!courseTeacherId) {
+        setSnackbar({
+          open: true,
+          message: "No teacher assigned to this course.",
+          severity: "error"
+        });
+        return;
+      }
+      
+      // Prepare bulk attendance data
+      const bulkAttendanceData = {
+        sessionId: selectedSession,
+        teacherId: courseTeacherId,
+        markedBy: userId,
+        markedByName: currentUser.name || currentUser.username || currentUser.displayName || 'Unknown User',
+        records: attendanceRecords.map(record => ({
+          studentId: record.studentId,
+          status: record.status,
+          checkInTime: record.checkInTime,
+          description: record.description || record.notes || '',
+          teacherId: courseTeacherId,
+          markedBy: userId,
+          markedByName: currentUser.name || currentUser.username || currentUser.displayName || 'Unknown User'
+        }))
+      };
+      
+
+      
+      const response = await attendanceService.bulkMarkAttendance(bulkAttendanceData);
+      
+      if (response.data) {
+        // Update local records with server response if available
+        setAttendanceRecords(response.data.records || attendanceRecords);
+      }
       
       // Update session statistics
       const updatedSessions = sessions.map(session => {
@@ -406,6 +564,7 @@ export default function AttendancePage() {
             presentStudents: present,
             lateStudents: late,
             absentStudents: absent,
+            totalStudents: attendanceRecords.length,
             status: 'completed'
           };
         }
@@ -421,11 +580,14 @@ export default function AttendancePage() {
         severity: "success"
       });
       
+      // Refresh attendance data to get updated records
+      fetchAttendanceBySession(selectedSession);
+      
     } catch (error) {
       console.error("Error saving attendance:", error);
       setSnackbar({
         open: true,
-        message: "Error saving attendance",
+        message: "Error saving attendance: " + (error.response?.data?.message || error.message),
         severity: "error"
       });
     } finally {
@@ -437,6 +599,60 @@ export default function AttendancePage() {
     setSelectedCourse("");
     setStatusFilter("All");
     setSelectedDate(dayjs());
+  };
+
+  // Export and import functions
+  const handleExportAttendance = async (courseId, format = 'csv') => {
+    try {
+      setLoading(true);
+      const response = await attendanceService.exportAttendanceData(courseId, format);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attendance_${courseId}_${new Date().toISOString().split('T')[0]}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      setSnackbar({
+        open: true,
+        message: "Attendance data exported successfully!",
+        severity: "success"
+      });
+    } catch (error) {
+      console.error("Error exporting attendance:", error);
+      setSnackbar({
+        open: true,
+        message: "Error exporting attendance data",
+        severity: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendReminders = async (courseId, sessionId) => {
+    try {
+      setLoading(true);
+      await attendanceService.sendAttendanceReminders(courseId, sessionId);
+      
+      setSnackbar({
+        open: true,
+        message: "Attendance reminders sent successfully!",
+        severity: "success"
+      });
+    } catch (error) {
+      console.error("Error sending reminders:", error);
+      setSnackbar({
+        open: true,
+        message: "Error sending reminders",
+        severity: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -560,6 +776,24 @@ export default function AttendancePage() {
             >
               Analytics
             </Button>
+
+            {selectedCourse && (
+              <Button
+                onClick={() => handleExportAttendance(selectedCourse)}
+                variant="outlined"
+                sx={{
+                  textTransform: "capitalize",
+                  borderRadius: "7px",
+                  fontWeight: "500",
+                  fontSize: "13px",
+                  padding: "6px 13px",
+                }}
+                color="success"
+                startIcon={<DownloadIcon />}
+              >
+                Export
+              </Button>
+            )}
 
             <Button
               onClick={handleClearFilters}
@@ -895,12 +1129,12 @@ export default function AttendancePage() {
             
             <Grid item xs={12}>
               <TextField
-                label="Notes"
+                label="Description"
                 multiline
                 rows={3}
                 fullWidth
-                value={sessionForm.notes}
-                onChange={(e) => setSessionForm({...sessionForm, notes: e.target.value})}
+                value={sessionForm.description}
+                onChange={(e) => setSessionForm({...sessionForm, description: e.target.value})}
               />
             </Grid>
           </Grid>
@@ -949,7 +1183,7 @@ export default function AttendancePage() {
                   <TableCell>Student</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Check-in Time</TableCell>
-                  <TableCell>Notes</TableCell>
+                  <TableCell>Description</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -1014,12 +1248,12 @@ export default function AttendancePage() {
                     <TableCell>
                       <TextField
                         size="small"
-                        placeholder="Add notes..."
-                        value={record.notes}
+                        placeholder="Add description..."
+                        value={record.description || record.notes || ''}
                         onChange={(e) => {
                           setAttendanceRecords(prev => 
                             prev.map(r => 
-                              r.id === record.id ? {...r, notes: e.target.value} : r
+                              r.id === record.id ? {...r, description: e.target.value} : r
                             )
                           );
                         }}

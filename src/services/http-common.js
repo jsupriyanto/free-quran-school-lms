@@ -7,6 +7,20 @@ const getCurrentUser = () => {
     }
     return null;
 }
+
+const setThirdPartySignInProgress = (value) => {
+    if (typeof window !== 'undefined') {
+        localStorage.setItem("thirdPartySignInProgress", value);
+    }
+}
+
+const getThirdPartySignInProgress = () => {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem("thirdPartySignInProgress") === "true";
+    }
+    return false;
+}
+
 const http = axios.create({
     baseURL: "https://free-quran-school-api.vercel.app/api/",
     headers: {
@@ -14,9 +28,24 @@ const http = axios.create({
     }
 });
 
+// Track ongoing refresh requests to prevent multiple concurrent refreshes
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+// Function to add failed requests to queue while token is being refreshed
+const subscribeTokenRefresh = (callback) => {
+    refreshSubscribers.push(callback);
+};
+
+// Function to process queued requests after token refresh
+const onTokenRefreshed = (newToken) => {
+    refreshSubscribers.forEach((callback) => callback(newToken));
+    refreshSubscribers = [];
+};
+
 // Request interceptor to dynamically add authorization header
 http.interceptors.request.use(
-    (config) => {
+    async (config) => {
         const user = getCurrentUser();
         if (user && user.accessToken) {
             // Check if token is expired before using it
@@ -24,17 +53,70 @@ http.interceptors.request.use(
                 const payload = JSON.parse(atob(user.accessToken.split('.')[1]));
                 const now = Math.floor(Date.now() / 1000);
                 
-                if (payload.exp < now) {
-                    console.log('Access token is expired, clearing user data');
-                    localStorage.removeItem('user');
-                    // Don't add expired token to request
-                    return config;
+                // Check if token expires in the next 5 minutes (300 seconds)
+                const bufferTime = 300; // 5 minutes
+                if (payload.exp < (now + bufferTime)) {
+                    // Only attempt refresh if not in third-party sign-in progress
+                    if (!getThirdPartySignInProgress() && user.refreshToken) {
+                        
+                        // If already refreshing, queue this request
+                        if (isRefreshing) {
+                            return new Promise((resolve) => {
+                                subscribeTokenRefresh((newToken) => {
+                                    if (newToken) {
+                                        config.headers.Authorization = `Bearer ${newToken}`;
+                                    }
+                                    resolve(config);
+                                });
+                            });
+                        }
+                        
+                        isRefreshing = true;
+                        
+                        try {
+                            // Import auth service to avoid circular dependency
+                            const { default: authService } = await import('./auth.service');
+                            const refreshedUser = await authService.refreshToken();
+                            
+                            if (refreshedUser && refreshedUser.accessToken) {
+                                config.headers.Authorization = `Bearer ${refreshedUser.accessToken}`;
+                                onTokenRefreshed(refreshedUser.accessToken);
+                            }
+                        } catch (refreshError) {
+                            console.error('Token refresh failed:', refreshError);
+                            onTokenRefreshed(null);
+                            
+                            // If this is an OAuth user and refresh failed, try to get fresh session
+                            if (user.oauthProvider) {
+                                try {
+                                    const { getSession } = await import('next-auth/react');
+                                    const session = await getSession();
+                                    if (session && session.user && session.user.accessToken && session.user.accessToken !== user.accessToken) {
+                                        const updatedUser = { ...user, ...session.user };
+                                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                                        config.headers.Authorization = `Bearer ${updatedUser.accessToken}`;
+                                    }
+                                } catch (sessionError) {
+                                    console.error('Failed to get fresh OAuth session:', sessionError);
+                                }
+                            }
+                        } finally {
+                            isRefreshing = false;
+                        }
+                    } else if (!getThirdPartySignInProgress()) {
+                        localStorage.removeItem('user');
+                    } else {
+                        config.headers.Authorization = `Bearer ${user.accessToken}`;
+                    }
+                } else {
+                    config.headers.Authorization = `Bearer ${user.accessToken}`;
                 }
-                
-                config.headers.Authorization = `Bearer ${user.accessToken}`;
             } catch (error) {
                 console.error('Error parsing JWT token:', error);
-                localStorage.removeItem('user');
+                // Only clear user data if not in third-party sign-in progress
+                if (!getThirdPartySignInProgress()) {
+                    localStorage.removeItem('user');
+                }
             }
         }
         return config;
@@ -46,25 +128,53 @@ http.interceptors.request.use(
 
 http.interceptors.response.use(
   (response) => response,
-  (error) => {
-    console.log('HTTP error response:', error.response);
+  async (error) => {
     const { status } = error.response || {};
     
     if (status === 401 || status === 403) {
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
         const isOnAuthPage = currentPath.includes('/authentication/');
+        const isThirdPartyInProgress = getThirdPartySignInProgress();
+        const user = getCurrentUser();
         
-        // Clear invalid/expired token data
-        localStorage.removeItem('user');
+        // Try to refresh token if we have a refresh token and not in third-party sign-in
+        if (!isThirdPartyInProgress && user && user.refreshToken && !isRefreshing) {
+          
+          try {
+            // Import auth service to avoid circular dependency
+            const { default: authService } = await import('./auth.service');
+            const refreshedUser = await authService.refreshToken();
+            
+            if (refreshedUser && refreshedUser.accessToken) {
+              // Retry the original request with new token
+              error.config.headers.Authorization = `Bearer ${refreshedUser.accessToken}`;
+              return http.request(error.config);
+            }
+          } catch (refreshError) {
+            console.error('Token refresh failed:', refreshError);
+            // Fall through to normal error handling
+          }
+        }
         
-        // Only redirect if we're not already on an auth page
-        if (!isOnAuthPage) {
-          console.log('Token invalid/expired, redirecting to sign-in');
-          // Use setTimeout to avoid redirect loops and allow other processes to complete
+        // Clear invalid/expired token data only if not in third-party sign-in progress
+        if (!isThirdPartyInProgress) {
+          localStorage.removeItem('user');
+        }
+
+        // Only redirect if we're not already on an auth page and not in third-party sign-in
+        if (!isOnAuthPage && !isThirdPartyInProgress) {
+          // Wait 3 seconds before redirecting to avoid loops
           setTimeout(() => {
-            window.location.href = '/authentication/sign-in';
-          }, 100);
+            // Double-check conditions before redirecting
+            const stillNotOnAuthPage = !window.location.pathname.includes('/authentication/');
+            const stillNotInThirdParty = !getThirdPartySignInProgress();
+            
+            if (stillNotOnAuthPage && stillNotInThirdParty) {
+              setThirdPartySignInProgress(true);
+              window.location.href = '/authentication/sign-in';
+            }
+          }, 3000); // 3 seconds delay
         }
       }
     }

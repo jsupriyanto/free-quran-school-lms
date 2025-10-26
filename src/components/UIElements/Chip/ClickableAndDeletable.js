@@ -8,11 +8,11 @@ import Stack from '@mui/material/Stack';
 
 export default function ClickableAndDeletable() {
   const handleClick = () => {
-    console.info('You clicked the Chip.');
+    // Handle chip click here
   };
 
   const handleDelete = () => {
-    console.info('You clicked the delete icon.');
+    // Handle delete action here
   };
 
   return (

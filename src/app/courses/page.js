@@ -193,7 +193,7 @@ export default function CoursesPage() {
   // Debug formData changes
   useEffect(() => {
     if (editMode) {
-      console.log("Form data updated:", formData);
+      // Form data updated for editing mode
     }
   }, [formData, editMode]);
 
@@ -342,8 +342,6 @@ export default function CoursesPage() {
     if (course) {
       setEditMode(true);
       setCurrentCourse(course);
-      console.log("Editing course:", course); // Debug log
-      console.log("Original dates:", { startDate: course.startDate, endDate: course.endDate, category: course.courseCategory });
       
       const newFormData = {
         title: course.title || "",
@@ -358,7 +356,6 @@ export default function CoursesPage() {
         endDate: formatDateForInput(course.endDate),
       };
       
-      console.log("Formatted form data:", newFormData);
       setFormData(newFormData);
     } else {
       setEditMode(false);

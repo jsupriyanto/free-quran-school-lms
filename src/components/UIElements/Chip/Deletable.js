@@ -9,7 +9,7 @@ import Stack from '@mui/material/Stack';
 export default function Deletable() {
 
   const handleDelete = () => {
-    console.info('You clicked the delete icon.');
+    // Handle delete action here
   };
 
   return (

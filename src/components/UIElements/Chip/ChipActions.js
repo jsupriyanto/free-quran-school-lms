@@ -9,7 +9,7 @@ import Stack from '@mui/material/Stack';
 export default function ChipActions() {
 
   const handleClick = () => {
-    console.info('You clicked the Chip.');
+    // Handle chip click here
   };
 
   return (

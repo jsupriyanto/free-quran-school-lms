@@ -25,7 +25,7 @@ const TopInstructor = () => {
     teacherService.getTop5Teachers().then((res) => {
       setInstructorData(res.data);
     }).catch(err => {
-      console.log(err);
+      // Handle error silently
     });
   };
 

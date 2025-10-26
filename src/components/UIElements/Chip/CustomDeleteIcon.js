@@ -11,11 +11,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 export default function CustomDeleteIcon() {
 
   const handleClick = () => {
-    console.info('You clicked the Chip.');
+    // Handle chip click here
   };
 
   const handleDelete = () => {
-    console.info('You clicked the delete icon.');
+    // Handle delete action here
   };
 
   return (

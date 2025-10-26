@@ -299,13 +299,11 @@ export default function EnrollmentsPage() {
     try {
       setLoading(true);
       const response = await enrollmentService.getAllEnrollments();
-      console.log("API Response:", response);
       
       if (response.data && response.data.length > 0) {
         setEnrollments(response.data);
       } else {
         // Fallback to sample data for development
-        console.log("No API data, using sample enrollments");
         setEnrollments(sampleEnrollments);
       }
     } catch (error) {
@@ -465,10 +463,8 @@ export default function EnrollmentsPage() {
   };
 
   const handleOpenModal = (enrollment = null) => {
-    console.log("Opening enrollment modal:", enrollment);
     
     if (enrollment) {
-      console.log("Editing enrollment:", enrollment);
       setEditingEnrollment(enrollment);
       
       const formattedData = {
@@ -482,7 +478,6 @@ export default function EnrollmentsPage() {
         completionDate: formatDateForInput(enrollment.completionDate)
       };
       
-      console.log("Formatted form data:", formattedData);
       setFormData(formattedData);
     } else {
       setEditingEnrollment(null);
@@ -498,7 +493,6 @@ export default function EnrollmentsPage() {
   };
 
   const handleSaveEnrollment = async () => {
-    console.log("Saving enrollment:", formData);
     
     try {
       setLoading(true);

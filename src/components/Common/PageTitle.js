@@ -5,7 +5,6 @@ import Link from "next/link";
 import styles from "../../../styles/PageTitle.module.css";
 
 const PageTitle = ({ pageTitle, dashboardUrl, dashboardText }) => {
-  console.log("dashboard Url:", dashboardUrl);
   return (
     <>
       <div className={styles.pageTitle}>

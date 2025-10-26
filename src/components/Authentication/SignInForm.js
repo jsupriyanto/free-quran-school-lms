@@ -30,7 +30,6 @@ const SignInForm = () => {
         router.push('/');
       })
       .catch(error => {
-        console.error("Login failed:", error);
         alert("Login failed: " + (error.response?.data?.message || error.message));
       })
       .finally(() => {
@@ -41,21 +40,21 @@ const SignInForm = () => {
   // use next-auth for authentication with google
   const handleSignIn = async (provider) => {
     if (isOAuthLoading) return; // Prevent multiple clicks
-    
+    authService.setThirdPartySignInProgress(true);
     setIsOAuthLoading(true);
     try {
       const result = await signIn(provider, { redirect: false });
       
       if (result?.error) {
-        console.error("OAuth Sign-in failed:", result.error);
+        authService.setThirdPartySignInProgress(false);
         alert("OAuth Sign-in failed: " + result.error);
       } else if (result?.ok) {
+        authService.setThirdPartySignInProgress(false);
         // Let the AuthProvider handle the redirect
-        console.log("OAuth sign-in successful");
         // Don't call setIsOAuthLoading(false) here as the page will redirect
       }
     } catch (error) {
-      console.error("OAuth Sign-in failed:", error);
+      authService.setThirdPartySignInProgress(false);
       alert("OAuth Sign-in failed: " + (error.response?.data?.message || error.message));
       setIsOAuthLoading(false);
     }

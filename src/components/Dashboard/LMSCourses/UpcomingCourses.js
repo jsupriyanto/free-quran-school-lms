@@ -19,7 +19,7 @@ const UpcomingCourses = () => {
     courseService.getUpcomingCourses().then((response) => {
       setCourses(response.data);
     }).catch((err) => {
-      console.log(err);
+      // Handle error silently
     });
   };
 

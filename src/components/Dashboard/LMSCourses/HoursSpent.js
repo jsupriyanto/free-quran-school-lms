@@ -37,7 +37,6 @@ const HoursSpent = () => {
       },
       events: {
         click: function (chart, w, e) {
-          // console.log(chart, w, e)
         },
       },
     },
