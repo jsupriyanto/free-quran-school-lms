@@ -211,12 +211,32 @@ export default function MembersList() {
   const [selectedUser, setSelectedUser] = React.useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = React.useState(null);
   const [selectedRole, setSelectedRole] = React.useState(1); // Default to User role (roleId: 1)
+  
+  // Form field states
+  const [formData, setFormData] = React.useState({
+    firstName: '',
+    lastName: '',
+    username: '',
+    password: '',
+    city: '',
+    state: '',
+    timezone: ''
+  });
 
   const handleClickOpen = () => {
     setSelectedUser(null);
     setUploadedImageUrl(null);
     setSelectedCountry("");
     setSelectedRole(1); // Default to User role
+    setFormData({
+      firstName: '',
+      lastName: '',
+      username: '',
+      password: '',
+      city: '',
+      state: '',
+      timezone: ''
+    });
     setOpen(true);
   };
 
@@ -226,13 +246,31 @@ export default function MembersList() {
     setUploadedImageUrl(null);
     setSelectedCountry("");
     setSelectedRole(1); // Reset to default User role
+    setFormData({
+      firstName: '',
+      lastName: '',
+      username: '',
+      password: '',
+      city: '',
+      state: '',
+      timezone: ''
+    });
   };
 
   const handleEditOpen = (user) => {
-    setSelectedCountry(user.country);
+    setSelectedCountry(user.country || "");
     setSelectedUser(user);
     setUploadedImageUrl(user.profilePicture || null);
     setSelectedRole(user.roleId || 1); // Set role from user data, default to User (1)
+    setFormData({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      username: user.username || '',
+      password: '', // Don't pre-fill password for security
+      city: user.city || '',
+      state: user.state || '',
+      timezone: user.timezone || ''
+    });
     setOpen(true);
   }
 
@@ -360,20 +398,27 @@ export default function MembersList() {
     }
   }, [globalSearchTerm, allUsers, sortBy, sortOrder]);
 
+  // Handle form field changes
+  const handleFormChange = (field) => (event) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: event.target.value
+    }));
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
 
     if (selectedUser) {
       userService.update(selectedUser.id, {
-        firstName: data.get("firstName"),
-        lastName: data.get("lastName"),
-        username: data.get("username"),
-        password: data.get("password"),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        password: formData.password || undefined, // Only include password if provided
         country: selectedCountry,
-        city: data.get("city"),
-        state: data.get("state"),
-        timezone: data.get("timezone"),
+        city: formData.city,
+        state: formData.state,
+        timezone: formData.timezone,
         profilePicture: uploadedImageUrl,
         roleId: selectedRole,
       }).then(() => {
@@ -384,14 +429,14 @@ export default function MembersList() {
       return;
     } else {
       userService.create({
-        firstName: data.get("firstName"),
-        lastName: data.get("lastName"),
-        username: data.get("username"),
-        password: data.get("password"),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        password: formData.password,
         country: selectedCountry,
-        city: data.get("city"),
-        state: data.get("state"),
-        timezone: data.get("timezone"),
+        city: formData.city,
+        state: formData.state,
+        timezone: formData.timezone,
         profilePicture: uploadedImageUrl,
         roleId: selectedRole,
       }).then(() => {
@@ -859,7 +904,7 @@ export default function MembersList() {
                   </Typography>
 
                   <ImageUpload
-                    currentImageUrl={selectedUser?.profilePicture || uploadedImageUrl}
+                    currentImageUrl={uploadedImageUrl}
                     onImageUpload={setUploadedImageUrl}
                     maxSize={5 * 1024 * 1024} // 5MB
                   />
@@ -885,7 +930,8 @@ export default function MembersList() {
                     id="firstName"
                     label="First Name"
                     autoFocus
-                    value={selectedUser ? selectedUser.firstName : ''}
+                    value={formData.firstName}
+                    onChange={handleFormChange('firstName')}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -912,7 +958,8 @@ export default function MembersList() {
                     id="lastName"
                     label="Last Name"
                     autoFocus
-                    value={selectedUser ? selectedUser.lastName : ''}
+                    value={formData.lastName}
+                    onChange={handleFormChange('lastName')}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -939,7 +986,8 @@ export default function MembersList() {
                     id="username"
                     label="example@info.com"
                     autoFocus
-                    value={selectedUser ? selectedUser.username : ''}
+                    value={formData.username}
+                    onChange={handleFormChange('username')}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -966,7 +1014,8 @@ export default function MembersList() {
                     id="password"
                     label="Password"
                     autoFocus
-                    value={selectedUser ? selectedUser.password : ''}
+                    value={formData.password}
+                    onChange={handleFormChange('password')}
                     type="password"
                     InputProps={{
                       style: { borderRadius: 8 },
@@ -1021,7 +1070,8 @@ export default function MembersList() {
                     id="city"
                     label="City"
                     autoFocus
-                    value={selectedUser ? selectedUser.city : ''}
+                    value={formData.city}
+                    onChange={handleFormChange('city')}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -1047,7 +1097,8 @@ export default function MembersList() {
                     id="state"
                     label="State"
                     autoFocus
-                    value={selectedUser ? selectedUser.state : ''}
+                    value={formData.state}
+                    onChange={handleFormChange('state')}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -1072,6 +1123,8 @@ export default function MembersList() {
                     label="Country"
                     value={selectedCountry}
                     onChange={(e) => setSelectedCountry(e.target.value)}
+                    fullWidth
+                    sx={{ borderRadius: 2 }}
                   >
                     {countryNames.map((country) => (
                       <MenuItem key={country.code} value={country.name}>
@@ -1079,6 +1132,33 @@ export default function MembersList() {
                       </MenuItem>
                     ))}
                   </Select>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+                  <Typography
+                    as="h5"
+                    sx={{
+                      fontWeight: "500",
+                      fontSize: "14px",
+                      mb: "12px",
+                    }}
+                  >
+                    Timezone
+                  </Typography>
+
+                  <TextField
+                    autoComplete="timezone"
+                    name="timezone"
+                    fullWidth
+                    id="timezone"
+                    label="Timezone"
+                    autoFocus
+                    value={formData.timezone}
+                    onChange={handleFormChange('timezone')}
+                    InputProps={{
+                      style: { borderRadius: 8 },
+                    }}
+                  />
                 </Grid>
 
                 <Grid size={{ xs: 12 }} textAlign="end">

@@ -188,22 +188,78 @@ export default function TeachersList() {
   const [open, setOpen] = React.useState(false);
   const [selectedTeacher, setSelectedTeacher] = React.useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = React.useState(null);
+  
+  // Form data state
+  const [formData, setFormData] = React.useState({
+    firstName: '',
+    lastName: '',
+    bio: '',
+    facebookUrl: '',
+    instagramUrl: '',
+    twitterUrl: '',
+    linkedInUrl: '',
+    youtubeUrl: '',
+    pinterestUrl: '',
+  });
 
+
+  // Handle form field changes
+  const handleFormChange = (event) => {
+    const { name, value } = event.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleClickOpen = () => {
     setSelectedTeacher(null);
     setUploadedImageUrl(null);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      bio: '',
+      facebookUrl: '',
+      instagramUrl: '',
+      twitterUrl: '',
+      linkedInUrl: '',
+      youtubeUrl: '',
+      pinterestUrl: '',
+    });
     setOpen(true);
   };
+  
   const handleClose = () => {
     setSelectedTeacher(null);
     setUploadedImageUrl(null);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      bio: '',
+      facebookUrl: '',
+      instagramUrl: '',
+      twitterUrl: '',
+      linkedInUrl: '',
+      youtubeUrl: '',
+      pinterestUrl: '',
+    });
     setOpen(false);
   };
 
   const handleEditOpen = (teacher) => {
     setSelectedTeacher(teacher);
     setUploadedImageUrl(teacher.photoUrl || null);
+    setFormData({
+      firstName: teacher.firstName || '',
+      lastName: teacher.lastName || '',
+      bio: teacher.bio || '',
+      facebookUrl: teacher.facebookUrl || '',
+      instagramUrl: teacher.instagramUrl || '',
+      twitterUrl: teacher.twitterUrl || '',
+      linkedInUrl: teacher.linkedInUrl || '',
+      youtubeUrl: teacher.youtubeUrl || '',
+      pinterestUrl: teacher.pinterestUrl || '',
+    });
     setOpen(true);
   }
 
@@ -330,37 +386,37 @@ export default function TeachersList() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    
     let updatedTeacher = {};
     let newTeacher = {};  
 
     if (selectedTeacher) {
       // Update existing teacher
       updatedTeacher = {
-        firstName: data.get("firstName"),
-        lastName: data.get("lastName"),
-        bio: data.get("bio"),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        bio: formData.bio,
         photoUrl: uploadedImageUrl,
-        facebookUrl: data.get("facebookUrl"),
-        instagramUrl: data.get("instagramUrl"),
-        twitterUrl: data.get("twitterUrl"),
-        linkedInUrl: data.get("linkedInUrl"),
-        youtubeUrl: data.get("youtubeUrl"),
-        pinterestUrl: data.get("pinterestUrl"),
+        facebookUrl: formData.facebookUrl,
+        instagramUrl: formData.instagramUrl,
+        twitterUrl: formData.twitterUrl,
+        linkedInUrl: formData.linkedInUrl,
+        youtubeUrl: formData.youtubeUrl,
+        pinterestUrl: formData.pinterestUrl,
       };
     } else {
       // Create new teacher
       newTeacher = {
-        firstName: data.get("firstName"),
-        lastName: data.get("lastName"),
-        bio: data.get("bio"),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        bio: formData.bio,
         photoUrl: uploadedImageUrl || "/assets/img/user.png",
-        facebookUrl: data.get("facebookUrl"),
-        instagramUrl: data.get("instagramUrl"),
-        twitterUrl: data.get("twitterUrl"),
-        linkedInUrl: data.get("linkedInUrl"),
-        youtubeUrl: data.get("youtubeUrl"),
-        pinterestUrl: data.get("pinterestUrl"),
+        facebookUrl: formData.facebookUrl,
+        instagramUrl: formData.instagramUrl,
+        twitterUrl: formData.twitterUrl,
+        linkedInUrl: formData.linkedInUrl,
+        youtubeUrl: formData.youtubeUrl,
+        pinterestUrl: formData.pinterestUrl,
       };
     }
     const teacherData = selectedTeacher ? { ...selectedTeacher, ...updatedTeacher } : newTeacher;
@@ -368,8 +424,6 @@ export default function TeachersList() {
     serviceCall.then(() => {
       handleRefresh();
       handleClose();
-      setSelectedTeacher(null);
-      setUploadedImageUrl(null);
     });
   };
   // End Add Teacher 
@@ -874,7 +928,8 @@ export default function TeachersList() {
                     id="firstName"
                     label="First Name"
                     autoFocus
-                    value={selectedTeacher?.firstName || ""}
+                    value={formData.firstName}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -900,7 +955,8 @@ export default function TeachersList() {
                     fullWidth
                     id="lastName"
                     label="Last Name"
-                    value={selectedTeacher?.lastName || ""}
+                    value={formData.lastName}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -926,7 +982,8 @@ export default function TeachersList() {
                     id="facebook"
                     label="Facebook URL"
                     autoFocus
-                    value={selectedTeacher?.facebookUrl || ""}
+                    value={formData.facebookUrl}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -952,7 +1009,8 @@ export default function TeachersList() {
                     id="instagram"
                     label="Instagram URL"
                     autoFocus
-                    value={selectedTeacher?.instagramUrl || ""}
+                    value={formData.instagramUrl}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -978,7 +1036,8 @@ export default function TeachersList() {
                     id="twitter"
                     label="Twitter/X URL"
                     autoFocus
-                    value={selectedTeacher?.twitterUrl || ""}
+                    value={formData.twitterUrl}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -1004,7 +1063,8 @@ export default function TeachersList() {
                     id="linkedin"
                     label="LinkedIn URL"
                     autoFocus 
-                    value={selectedTeacher?.linkedInUrl || ""}
+                    value={formData.linkedInUrl}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -1029,7 +1089,8 @@ export default function TeachersList() {
                     id="youtube"
                     label="YouTube URL"
                     autoFocus
-                    value={selectedTeacher?.youtubeUrl || ""}
+                    value={formData.youtubeUrl}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -1054,7 +1115,8 @@ export default function TeachersList() {
                     id="pinterest"
                     label="Pinterest URL"
                     autoFocus
-                    value={selectedTeacher?.pinterestUrl || ""}
+                    value={formData.pinterestUrl}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
@@ -1083,7 +1145,8 @@ export default function TeachersList() {
                     autoFocus
                     multiline
                     rows={6}
-                    value={selectedTeacher?.bio || ""}
+                    value={formData.bio}
+                    onChange={handleFormChange}
                     InputProps={{
                       style: { borderRadius: 8 },
                     }}
