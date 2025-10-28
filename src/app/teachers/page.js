@@ -700,7 +700,15 @@ export default function TeachersList() {
                       paddingBottom: "13px",
                     }}
                   >
-                    {row.bio}
+                    {row.bio && row.bio.length > 100 ? (
+                      <Tooltip title={row.bio} placement="top">
+                        <span style={{ cursor: 'help' }}>
+                          {`${row.bio.substring(0, 100)}...`}
+                        </span>
+                      </Tooltip>
+                    ) : (
+                      row.bio
+                    )}
                   </TableCell>
 
                   <TableCell
