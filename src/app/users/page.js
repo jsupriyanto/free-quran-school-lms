@@ -466,11 +466,12 @@ export default function MembersList() {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             alignItems: "center",
             borderBottom: "1px solid #EEF0F7",
             paddingBottom: "10px",
             mb: "20px",
+            gap: 2,
           }}
           className="for-dark-bottom-border"
         >
@@ -698,7 +699,7 @@ export default function MembersList() {
                   </TableCell>
 
                   <TableCell
-                    align="center"
+                    align="left"
                     style={{
                       borderBottom: "1px solid #F7FAFF",
                       fontSize: "13px",
@@ -1154,6 +1155,7 @@ export default function MembersList() {
                     label="Timezone"
                     autoFocus
                     value={formData.timezone}
+                    placeholder="e.g., America/Chicago"
                     onChange={handleFormChange('timezone')}
                     InputProps={{
                       style: { borderRadius: 8 },

@@ -31,6 +31,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ClearIcon from "@mui/icons-material/Clear";
 import Checkbox from "@mui/material/Checkbox";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
 import PageTitle from "@/components/Common/PageTitle";
 import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
@@ -40,6 +44,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import authService from "@/services/auth.service";
 import teacherService from "@/services/teacher.service";
+import userService from "@/services/user.service";
 import ImageUpload from "@/components/Common/ImageUpload";
 import { useSearch } from "@/contexts/SearchContext";
 
@@ -202,6 +207,37 @@ export default function TeachersList() {
     pinterestUrl: '',
   });
 
+  // Users state for dropdown
+  const [users, setUsers] = React.useState([]);
+  const [selectedUserId, setSelectedUserId] = React.useState('');
+
+
+  // Fetch users from API using userService
+  const fetchUsers = async () => {
+    try {
+      const response = await userService.getAll();
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  // Handle user selection from dropdown
+  const handleUserSelection = (event) => {
+    const userId = event.target.value;
+    setSelectedUserId(userId);
+    
+    if (userId) {
+      const selectedUser = users.find(user => user.id === userId);
+      if (selectedUser) {
+        setFormData(prev => ({
+          ...prev,
+          firstName: selectedUser.firstName || '',
+          lastName: selectedUser.lastName || '',
+        }));
+      }
+    }
+  };
 
   // Handle form field changes
   const handleFormChange = (event) => {
@@ -215,6 +251,7 @@ export default function TeachersList() {
   const handleClickOpen = () => {
     setSelectedTeacher(null);
     setUploadedImageUrl(null);
+    setSelectedUserId('');
     setFormData({
       firstName: '',
       lastName: '',
@@ -226,12 +263,14 @@ export default function TeachersList() {
       youtubeUrl: '',
       pinterestUrl: '',
     });
+    fetchUsers(); // Fetch users when opening the modal
     setOpen(true);
   };
   
   const handleClose = () => {
     setSelectedTeacher(null);
     setUploadedImageUrl(null);
+    setSelectedUserId('');
     setFormData({
       firstName: '',
       lastName: '',
@@ -249,6 +288,7 @@ export default function TeachersList() {
   const handleEditOpen = (teacher) => {
     setSelectedTeacher(teacher);
     setUploadedImageUrl(teacher.photoUrl || null);
+    setSelectedUserId(''); // Don't pre-select user when editing
     setFormData({
       firstName: teacher.firstName || '',
       lastName: teacher.lastName || '',
@@ -260,6 +300,7 @@ export default function TeachersList() {
       youtubeUrl: teacher.youtubeUrl || '',
       pinterestUrl: teacher.pinterestUrl || '',
     });
+    fetchUsers(); // Fetch users when opening the modal for editing too
     setOpen(true);
   }
 
@@ -387,6 +428,12 @@ export default function TeachersList() {
   const handleSubmit = (event) => {
     event.preventDefault();
     
+    // Validate that a user is selected when creating new teacher
+    if (!selectedTeacher && !selectedUserId) {
+      alert("Please select a user to create a teacher profile.");
+      return;
+    }
+    
     let updatedTeacher = {};
     let newTeacher = {};  
 
@@ -403,6 +450,7 @@ export default function TeachersList() {
         linkedInUrl: formData.linkedInUrl,
         youtubeUrl: formData.youtubeUrl,
         pinterestUrl: formData.pinterestUrl,
+        userId: selectedTeacher.userId, // Preserve existing userId when updating
       };
     } else {
       // Create new teacher
@@ -417,6 +465,7 @@ export default function TeachersList() {
         linkedInUrl: formData.linkedInUrl,
         youtubeUrl: formData.youtubeUrl,
         pinterestUrl: formData.pinterestUrl,
+        userId: selectedUserId || null, // Add userId from dropdown selection
       };
     }
     const teacherData = selectedTeacher ? { ...selectedTeacher, ...updatedTeacher } : newTeacher;
@@ -455,11 +504,12 @@ export default function TeachersList() {
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             alignItems: "center",
             borderBottom: "1px solid #EEF0F7",
             paddingBottom: "10px",
             mb: "20px",
+            gap: 2,
           }}
           className="for-dark-bottom-border"
         >
@@ -533,7 +583,7 @@ export default function TeachersList() {
                 </TableCell>
 
                 <TableCell
-                  align="center"
+                  align="left"
                   sx={{ 
                     borderBottom: "1px solid #F7FAFF", 
                     fontSize: "13.5px",
@@ -543,7 +593,7 @@ export default function TeachersList() {
                   }}
                   onClick={() => handleHeaderClick('bio')}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 1 }}>
                     Bio
                     {renderSortIcon('bio')}
                   </Box>
@@ -692,7 +742,7 @@ export default function TeachersList() {
                   </TableCell>
 
                   <TableCell
-                    align="center"
+                    align="left"
                     style={{
                       borderBottom: "1px solid #F7FAFF",
                       fontSize: "13px",
@@ -915,6 +965,41 @@ export default function TeachersList() {
                   </Box>
                 </Grid>
 
+                {/* User Selection Dropdown - Only for new teachers */}
+                {!selectedTeacher && (
+                  <Grid size={{ xs: 12 }}>
+                    <Typography
+                      as="h5"
+                      sx={{
+                        fontWeight: "500",
+                        fontSize: "14px",
+                        mb: "12px",
+                      }}
+                    >
+                      Select User (Required)
+                    </Typography>
+
+                    <FormControl fullWidth required>
+                      <InputLabel id="user-select-label">Select User *</InputLabel>
+                      <Select
+                        labelId="user-select-label"
+                        id="user-select"
+                        value={selectedUserId}
+                        label="Select User *"
+                        onChange={handleUserSelection}
+                        required
+                        sx={{ borderRadius: 2 }}
+                      >
+                        {users.map((user) => (
+                          <MenuItem key={user.id} value={user.id}>
+                            {user.firstName} {user.lastName} ({user.username})
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                )}
+
                 {/* First Name and Last Name on the same line */}
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography
@@ -935,10 +1020,9 @@ export default function TeachersList() {
                     fullWidth
                     id="firstName"
                     label="First Name"
-                    autoFocus
                     value={formData.firstName}
-                    onChange={handleFormChange}
                     InputProps={{
+                      readOnly: true,
                       style: { borderRadius: 8 },
                     }}
                   />
@@ -964,8 +1048,8 @@ export default function TeachersList() {
                     id="lastName"
                     label="Last Name"
                     value={formData.lastName}
-                    onChange={handleFormChange}
                     InputProps={{
+                      readOnly: true,
                       style: { borderRadius: 8 },
                     }}
                   />
