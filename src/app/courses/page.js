@@ -579,45 +579,43 @@ export default function CoursesPage() {
       >
         <Box
           sx={{
-            display: { xs: "block", sm: "flex" },
+            display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             mb: "25px",
+            gap: 2
           }}
         >
+          <Button
+            onClick={() => handleOpenModal()}
+            variant="contained"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "6px 20px",
+              color: "#fff !important"
+            }}
+          >
+            <AddIcon sx={{ position: "relative", top: "-1px", mr: 1 }} />
+            Add Course
+          </Button>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Button
-              onClick={fetchCourses}
-              variant="outlined"
-              sx={{
-                textTransform: "capitalize",
-                borderRadius: "7px",
-                fontWeight: "500",
-                fontSize: "13px",
-                padding: "6px 20px",
-              }}
-            >
-              <RefreshIcon sx={{ position: "relative", top: "-1px", mr: 1 }} />
-              Refresh
-            </Button>
-
-            <Button
-              onClick={() => handleOpenModal()}
-              variant="contained"
-              sx={{
-                textTransform: "capitalize",
-                borderRadius: "7px",
-                fontWeight: "500",
-                fontSize: "13px",
-                padding: "6px 20px",
-                color: "#fff !important"
-              }}
-            >
-              <AddIcon sx={{ position: "relative", top: "-1px", mr: 1 }} />
-              Add Course
-            </Button>
-          </Box>
+          <Button
+            onClick={fetchCourses}
+            variant="outlined"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "6px 20px",
+            }}
+          >
+            <RefreshIcon sx={{ position: "relative", top: "-1px", mr: 1 }} />
+            Refresh
+          </Button>
         </Box>
 
         <TableContainer component={Paper} sx={{ boxShadow: "none" }}>

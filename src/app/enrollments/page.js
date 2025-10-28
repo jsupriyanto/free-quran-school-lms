@@ -631,67 +631,50 @@ export default function EnrollmentsPage() {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             mb: "25px",
+            gap: 2
           }}
         >
+          <Button
+            onClick={() => handleOpenModal()}
+            variant="contained"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "6px 13px",
+              color: "#fff !important",
+            }}
+            color="primary"
+            startIcon={<AddIcon />}
+          >
+            Add Enrollment
+          </Button>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Button
-              onClick={handleRefresh}
-              variant="outlined"
-              sx={{
-                textTransform: "capitalize",
-                borderRadius: "7px",
-                fontWeight: "500",
-                fontSize: "13px",
-                padding: "6px 13px",
-              }}
-              color="primary"
-              startIcon={<RefreshIcon />}
-            >
-              Refresh
-            </Button>
-
-            <Button
-              onClick={handleClearFilters}
-              variant="outlined"
-              sx={{
-                textTransform: "capitalize",
-                borderRadius: "7px",
-                fontWeight: "500",
-                fontSize: "13px",
-                padding: "6px 13px",
-              }}
-              color="secondary"
-              startIcon={<ClearIcon />}
-            >
-              Clear Filters
-            </Button>
-
-            <Button
-              onClick={() => handleOpenModal()}
-              variant="outlined"
-              sx={{
-                textTransform: "capitalize",
-                borderRadius: "7px",
-                fontWeight: "500",
-                fontSize: "13px",
-                padding: "6px 13px",
-              }}
-              color="primary"
-              startIcon={<AddIcon />}
-            >
-              Add Enrollment
-            </Button>
-          </Box>
+          <Button
+            onClick={handleRefresh}
+            variant="outlined"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "6px 13px",
+            }}
+            color="primary"
+            startIcon={<RefreshIcon />}
+          >
+            Refresh
+          </Button>
         </Box>
 
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-end",
+            justifyContent: "flex-start",
             mb: "20px",
             gap: "15px",
             flexWrap: "wrap"
@@ -749,6 +732,22 @@ export default function EnrollmentsPage() {
               ))}
             </Select>
           </FormControl>
+
+          <Button
+            onClick={handleClearFilters}
+            variant="outlined"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "6px 13px",
+            }}
+            color="primary"
+            startIcon={<ClearIcon />}
+          >
+            Clear Filters
+          </Button>
         </Box>
 
         {loading ? (
@@ -1117,7 +1116,7 @@ export default function EnrollmentsPage() {
                   >
                     {students.map((student) => (
                       <MenuItem key={student.id} value={student.id}>
-                        {student.name} ({student.email})
+                        {student.firstName} {student.lastName} ({student.username})
                       </MenuItem>
                     ))}
                   </Select>

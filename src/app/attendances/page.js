@@ -724,29 +724,46 @@ export default function AttendancePage() {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
             mb: "25px",
+            gap: 2
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Button
-              onClick={() => setSessionDialogOpen(true)}
-              variant="contained"
-              sx={{
-                textTransform: "capitalize",
-                borderRadius: "7px",
-                fontWeight: "500",
-                fontSize: "13px",
-                padding: "10px 20px",
-              }}
-              color="primary"
-              startIcon={<AddIcon />}
-            >
-              Create Session
-            </Button>
+          <Button
+            onClick={() => setSessionDialogOpen(true)}
+            variant="contained"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "10px 20px",
+            }}
+            color="primary"
+            startIcon={<AddIcon />}
+          >
+            Create Session
+          </Button>
 
+          <Button
+            onClick={() => window.open('/attendances/analytics', '_blank')}
+            variant="contained"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "6px 13px",
+            }}
+            color="secondary"
+            startIcon={<BarChartIcon />}
+          >
+            Analytics
+          </Button>
+
+          {selectedCourse && (
             <Button
-              onClick={fetchSessions}
+              onClick={() => handleExportAttendance(selectedCourse)}
               variant="outlined"
               sx={{
                 textTransform: "capitalize",
@@ -755,62 +772,28 @@ export default function AttendancePage() {
                 fontSize: "13px",
                 padding: "6px 13px",
               }}
-              color="primary"
-              startIcon={<RefreshIcon />}
+              color="success"
+              startIcon={<DownloadIcon />}
             >
-              Refresh
+              Export
             </Button>
+          )}
 
-            <Button
-              onClick={() => window.open('/attendances/analytics', '_blank')}
-              variant="contained"
-              sx={{
-                textTransform: "capitalize",
-                borderRadius: "7px",
-                fontWeight: "500",
-                fontSize: "13px",
-                padding: "6px 13px",
-              }}
-              color="secondary"
-              startIcon={<BarChartIcon />}
-            >
-              Analytics
-            </Button>
-
-            {selectedCourse && (
-              <Button
-                onClick={() => handleExportAttendance(selectedCourse)}
-                variant="outlined"
-                sx={{
-                  textTransform: "capitalize",
-                  borderRadius: "7px",
-                  fontWeight: "500",
-                  fontSize: "13px",
-                  padding: "6px 13px",
-                }}
-                color="success"
-                startIcon={<DownloadIcon />}
-              >
-                Export
-              </Button>
-            )}
-
-            <Button
-              onClick={handleClearFilters}
-              variant="outlined"
-              sx={{
-                textTransform: "capitalize",
-                borderRadius: "7px",
-                fontWeight: "500",
-                fontSize: "13px",
-                padding: "6px 13px",
-              }}
-              color="secondary"
-              startIcon={<ClearIcon />}
-            >
-              Clear Filters
-            </Button>
-          </Box>
+          <Button
+            onClick={fetchSessions}
+            variant="outlined"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "6px 13px",
+            }}
+            color="primary"
+            startIcon={<RefreshIcon />}
+          >
+            Refresh
+          </Button>
         </Box>
 
         {/* Filters */}
@@ -874,6 +857,22 @@ export default function AttendancePage() {
             onChange={(newValue) => setSelectedDate(newValue)}
             renderInput={(params) => <TextField {...params} size="small" />}
           />
+
+          <Button
+            onClick={handleClearFilters}
+            variant="outlined"
+            sx={{
+              textTransform: "capitalize",
+              borderRadius: "7px",
+              fontWeight: "500",
+              fontSize: "13px",
+              padding: "6px 13px",
+            }}
+            color="secondary"
+            startIcon={<ClearIcon />}
+          >
+            Clear Filters
+          </Button>
         </Box>
 
         {/* Tabs */}
