@@ -19,6 +19,10 @@ class AttendanceService {
     return http.post("/attendance/sessions", data);
   }
 
+  getAllSessions() {
+    return http.get("/attendance/sessions");
+  }
+
   getSessionsByCourse(courseId) {
     return http.get(`/attendance/sessions/course/${courseId}`);
   }

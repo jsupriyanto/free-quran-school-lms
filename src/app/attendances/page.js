@@ -65,6 +65,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SendIcon from "@mui/icons-material/Send";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import CloseIcon from "@mui/icons-material/Close";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import TableViewIcon from "@mui/icons-material/TableView";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 
 // Services
 import attendanceService from "@/services/attendance.service";
@@ -126,21 +129,29 @@ export default function AttendancePage() {
 
   // State management
   const [activeTab, setActiveTab] = useState(0);
-  const [courses, setCourses] = useState([]);
-  const [sessions, setSessions] = useState([]);
-  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  let [courses, setCourses] = useState([]);
+  let [sessions, setSessions] = useState([]);
+  let [attendanceRecords, setAttendanceRecords] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [dataFetched, setDataFetched] = useState(false);
   
   // Filters
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [statusFilter, setStatusFilter] = useState("All");
-  
+  let [selectedCourse, setSelectedCourse] = useState("");
+  let [selectedDate, setSelectedDate] = useState(null);
+  let [statusFilter, setStatusFilter] = useState("All");
+
   // Dialogs
   const [sessionDialogOpen, setSessionDialogOpen] = useState(false);
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
-  const [selectedSession, setSelectedSession] = useState(null);
+  let [selectedSession, setSelectedSession] = useState(null);
+  
+  // Export menu
+  const [exportMenuAnchor, setExportMenuAnchor] = useState(null);
+  const exportMenuOpen = Boolean(exportMenuAnchor);
+  
+  // Export tracking
+  const [lastExport, setLastExport] = useState(null);
   
   // Form data
   const [sessionForm, setSessionForm] = useState({
@@ -173,31 +184,23 @@ export default function AttendancePage() {
   
   const { globalSearchTerm } = useSearch();
 
-  // Check authentication on component mount
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
-      console.warn("No authenticated user found");
-      setSnackbar({
-        open: true,
-        message: "Please log in to access attendance management.",
-        severity: "warning"
-      });
-    }
-  }, []);
-
   // Fetch data
   useEffect(() => {
     fetchCourses();
-    fetchSessions();
     fetchDashboardStats();
     fetchAttendanceOverview();
     fetchAttendanceTrends();
   }, []);
 
+  // Fetch sessions after courses are loaded
+  useEffect(() => {
+    if (courses.length > 0) {
+      fetchSessions();
+    }
+  }, [courses]);
+
   useEffect(() => {
     if (selectedCourse) {
-      fetchSessionsByCourse(selectedCourse);
       fetchEnrollmentsByCourse(selectedCourse);
     }
   }, [selectedCourse]);
@@ -206,14 +209,17 @@ export default function AttendancePage() {
     try {
       setLoading(true);
       const response = await courseService.getAll();
+      
       if (response.data && Array.isArray(response.data)) {
         setCourses(response.data);
       } else {
         setCourses([]);
       }
+      setDataFetched(true);
     } catch (error) {
       console.error("Error fetching courses:", error);
       setCourses([]);
+      setDataFetched(true);
     } finally {
       setLoading(false);
     }
@@ -222,29 +228,58 @@ export default function AttendancePage() {
   const fetchSessions = async () => {
     try {
       setLoading(true);
-      // Try to get all sessions from API - we'll aggregate from all courses
-      const allSessions = [];
       
-      // If we have courses, get sessions for each course
-      if (courses.length > 0) {
+      // Try to get all sessions directly first
+      try {
+        const response = await attendanceService.getAllSessions();
+        
+        if (response.data && Array.isArray(response.data)) {
+          // Direct array of sessions
+          setSessions(response.data);
+          return;
+        } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+          // Nested data structure
+          setSessions(response.data.data);
+          return;
+        } else if (response.data && response.data.data && response.data.data.sessions && Array.isArray(response.data.data.sessions)) {
+          // Sessions property
+          setSessions(response.data.data.sessions);
+          return;
+        }
+      } catch (allSessionsError) {
+        // If getAllSessions fails, try per-course approach
+      }
+
+      // Fallback: Get sessions from each course
+      if (sessions.length == 0 && courses.length > 0) {
+        const allSessions = [];
+
         for (const course of courses) {
           try {
             const response = await attendanceService.getSessionsByCourse(course.id);
+            
             if (response.data && Array.isArray(response.data)) {
-              allSessions.push(...response.data);
+              // Add course information to each session
+              const sessionsWithCourseInfo = response.data.map(session => ({
+                ...session,
+                courseId: course.id,
+                courseName: course.title
+              }));
+              allSessions.push(...sessionsWithCourseInfo);
             }
           } catch (courseError) {
-            console.warn(`Error fetching sessions for course ${course.id}:`, courseError);
+            continue;
           }
         }
+
+        setSessions(allSessions);
       }
-      
-      setSessions(allSessions);
     } catch (error) {
       console.error("Error fetching sessions:", error);
       setSessions([]);
     } finally {
       setLoading(false);
+      filteredSessions.push(...sessions);
     }
   };
 
@@ -301,8 +336,8 @@ export default function AttendancePage() {
     try {
       setLoading(true);
       const response = await attendanceService.getAttendanceBySession(sessionId);
-      if (response.data && Array.isArray(response.data)) {
-        setAttendanceRecords(response.data);
+      if (response.data && response.data.data && response.data.data.records && Array.isArray(response.data.data.records)) {
+        setAttendanceRecords(response.data.data.records);
       } else {
         setAttendanceRecords([]);
       }
@@ -598,7 +633,7 @@ export default function AttendancePage() {
   const handleClearFilters = () => {
     setSelectedCourse("");
     setStatusFilter("All");
-    setSelectedDate(dayjs());
+    setSelectedDate(null);
   };
 
   // Export and import functions
@@ -626,6 +661,392 @@ export default function AttendancePage() {
       setSnackbar({
         open: true,
         message: "Error exporting attendance data",
+        severity: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Generate filtered CSV report with session-level summary data
+   * Exports: Session info, attendance stats, and summary metrics based on current filters
+   */
+  const generateFilteredCSVReport = async () => {
+    try {
+      setLoading(true);
+      
+      // Get filtered sessions
+      const filteredData = filteredSessions;
+      
+      if (filteredData.length === 0) {
+        setSnackbar({
+          open: true,
+          message: "No sessions available to export with current filters. Try adjusting your filters.",
+          severity: "warning"
+        });
+        return;
+      }
+
+      // Fetch attendance records for all sessions if not already loaded
+      let allAttendanceRecords = [...attendanceRecords];
+      
+      if (allAttendanceRecords.length === 0) {
+        setSnackbar({
+          open: true,
+          message: `Fetching attendance records for ${filteredData.length} sessions...`,
+          severity: "info"
+        });
+        
+        // Fetch attendance records for each session
+        let fetchedCount = 0;
+        for (const session of filteredData) {
+          try {
+            const response = await attendanceService.getAttendanceBySession(session.id);
+            if (response.data && response.data.data && response.data.data.records && Array.isArray(response.data.data.records)) {
+              allAttendanceRecords.push(...response.data.data.records);
+            } else if (response.data && Array.isArray(response.data)) {
+              allAttendanceRecords.push(...response.data);
+            }
+            fetchedCount++;
+          } catch (sessionError) {
+            console.warn(`Could not fetch attendance for session ${session.id}:`, sessionError);
+            fetchedCount++;
+            // Continue with other sessions
+          }
+        }
+        
+        setSnackbar({
+          open: true,
+          message: `Loaded attendance data from ${fetchedCount} sessions. Generating report...`,
+          severity: "info"
+        });
+        
+        // Update global attendance records state to avoid future API calls
+        setAttendanceRecords(allAttendanceRecords);
+      }
+
+      // Prepare CSV headers
+      const headers = [
+        "Session ID",
+        "Course Name",
+        "Session Date",
+        "Session Time", 
+        "Status",
+        "Total Students",
+        "Present",
+        "Late", 
+        "Absent",
+        "Attendance Rate (%)",
+        "Created At",
+        "Updated At"
+      ];
+
+      // Prepare CSV data
+      const csvData = filteredData.map(session => {
+        const sessionRecords = allAttendanceRecords.filter(record => 
+          record.sessionId === session.id || record.sessionId === session.sessionId
+        );
+        
+        const present = sessionRecords.filter(r => r.status === 'present').length;
+        const late = sessionRecords.filter(r => r.status === 'late').length;
+        const absent = sessionRecords.filter(r => r.status === 'absent').length;
+        const total = sessionRecords.length;
+        const attendanceRate = total > 0 ? ((present + late) / total * 100).toFixed(2) : 0;
+
+        return [
+          session.id || '',
+          session.course?.title || session.courseName || session.courseTitle || '',
+          session.sessionDate ? dayjs(session.sessionDate).format('YYYY-MM-DD') : '',
+          session.sessionTime ? session.sessionTime : '',
+          session.status || '',
+          total,
+          present,
+          late,
+          absent,
+          attendanceRate,
+          session.createdAt ? dayjs(session.createdAt).format('YYYY-MM-DD HH:mm:ss') : '',
+          session.updatedAt ? dayjs(session.updatedAt).format('YYYY-MM-DD HH:mm:ss') : ''
+        ];
+      });
+
+      // Convert to CSV string
+      const csvContent = [headers, ...csvData]
+        .map(row => 
+          row.map(cell => {
+            // Handle cells with commas, quotes, or newlines
+            const cellStr = String(cell || '');
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+              return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+          }).join(',')
+        )
+        .join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      // Generate filename with filters
+      const filterSuffix = [];
+      if (selectedCourse) {
+        const course = courses.find(c => c.id.toString() === selectedCourse.toString());
+        filterSuffix.push(`course-${course?.title?.replace(/[^a-zA-Z0-9]/g, '_') || selectedCourse}`);
+      }
+      if (selectedDate) {
+        filterSuffix.push(`date-${dayjs(selectedDate).format('YYYY-MM-DD')}`);
+      }
+      if (statusFilter !== 'All') {
+        filterSuffix.push(`status-${statusFilter}`);
+      }
+      
+      const filename = `attendance-report${filterSuffix.length > 0 ? `_${filterSuffix.join('_')}` : ''}_${dayjs().format('YYYY-MM-DD-HHmm')}.csv`;
+      
+      link.href = url;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Update last export info
+      setLastExport({
+        type: 'Sessions Summary',
+        timestamp: dayjs(),
+        recordCount: filteredData.length,
+        filename: filename
+      });
+
+      setSnackbar({
+        open: true,
+        message: `CSV report downloaded successfully! (${filteredData.length} records)`,
+        severity: "success"
+      });
+
+    } catch (error) {
+      console.error("Error generating CSV report:", error);
+      setSnackbar({
+        open: true,
+        message: "Error generating CSV report",
+        severity: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Generate detailed attendance CSV with individual student records
+   * Exports: Student-level attendance data, including enrollment info for sessions without records
+   */
+  const generateDetailedAttendanceCSV = async () => {
+    try {
+      setLoading(true);
+      
+      // Get filtered sessions
+      const filteredData = filteredSessions;
+      
+      if (filteredData.length === 0) {
+        setSnackbar({
+          open: true,
+          message: "No sessions available to export with current filters",
+          severity: "warning"
+        });
+        return;
+      }
+
+      // Fetch attendance records for all sessions if not already loaded
+      let allAttendanceRecords = [...attendanceRecords];
+      
+      if (allAttendanceRecords.length === 0) {
+        setSnackbar({
+          open: true,
+          message: `Fetching detailed attendance records for ${filteredData.length} sessions...`,
+          severity: "info"
+        });
+        
+        // Fetch attendance records for each session
+        let fetchedCount = 0;
+        for (const session of filteredData) {
+          try {
+            const response = await attendanceService.getAttendanceBySession(session.id);
+            if (response.data && response.data.data && response.data.data.records && Array.isArray(response.data.data.records)) {
+              allAttendanceRecords.push(...response.data.data.records);
+            } else if (response.data && Array.isArray(response.data)) {
+              allAttendanceRecords.push(...response.data);
+            }
+            fetchedCount++;
+          } catch (sessionError) {
+            console.warn(`Could not fetch attendance for session ${session.id}:`, sessionError);
+            fetchedCount++;
+            // Continue with other sessions
+          }
+        }
+        
+        setSnackbar({
+          open: true,
+          message: `Loaded detailed attendance data from ${fetchedCount} sessions. Generating report...`,
+          severity: "info"
+        });
+        
+        // Update global attendance records state to avoid future API calls
+        setAttendanceRecords(allAttendanceRecords);
+      }
+
+      // Prepare detailed CSV headers
+      const headers = [
+        "Session ID",
+        "Course Name", 
+        "Session Date",
+        "Session Time",
+        "Session Status",
+        "Student ID",
+        "Student Name",
+        "Student Email",
+        "Attendance Status",
+        "Check-in Time",
+        "Notes",
+        "Marked By",
+        "Record Created At"
+      ];
+
+      const csvData = [];
+      
+      // Get detailed records for each filtered session
+      for (const session of filteredData) {
+        const sessionRecords = allAttendanceRecords.filter(record => 
+          record.sessionId === session.id || record.sessionId === session.sessionId
+        );
+
+        if (sessionRecords.length === 0) {
+          // Add session without attendance records but include enrollment info if available
+          const sessionEnrollments = enrollments.filter(enrollment => 
+            enrollment.courseId === session.courseId || enrollment.courseId === session.course?.id
+          );
+
+          if (sessionEnrollments.length === 0) {
+            // Add session row with no student data
+            csvData.push([
+              session.id || session.sessionId || '',
+              session.courseName || session.courseTitle || session.course?.title || '',
+              session.sessionDate ? dayjs(session.sessionDate).format('YYYY-MM-DD') : '',
+              session.sessionTime ? dayjs(session.sessionTime).format('HH:mm') : '',
+              session.status || '',
+              '',
+              'No students enrolled',
+              '',
+              'Not marked',
+              '',
+              'Session created without attendance records',
+              '',
+              session.createdAt ? dayjs(session.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+            ]);
+          } else {
+            // Add enrolled students with "not marked" status
+            sessionEnrollments.forEach(enrollment => {
+              csvData.push([
+                session.id || session.sessionId || '',
+                session.courseName || session.courseTitle || session.course?.title || '',
+                session.sessionDate ? dayjs(session.sessionDate).format('YYYY-MM-DD') : '',
+                session.sessionTime ? dayjs(session.sessionTime).format('HH:mm') : '',
+                session.status || '',
+                enrollment.userId || enrollment.studentId || '',
+                enrollment.userName || enrollment.studentName || enrollment.user?.name || '',
+                enrollment.userEmail || enrollment.studentEmail || enrollment.user?.email || '',
+                'Not marked',
+                '',
+                'Attendance not taken for this session',
+                '',
+                session.createdAt ? dayjs(session.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+              ]);
+            });
+          }
+        } else {
+          // Add records for each student
+          sessionRecords.forEach(record => {
+            csvData.push([
+              session.id || session.sessionId || '',
+              session.courseName || session.courseTitle || session.course?.title || '',
+              session.sessionDate ? dayjs(session.sessionDate).format('YYYY-MM-DD') : '',
+              session.sessionTime ? dayjs(session.sessionTime).format('HH:mm') : '',
+              session.status || '',
+              record.studentId || record.userId || '',
+              record.studentName || record.userName || record.user?.name || '',
+              record.studentEmail || record.userEmail || record.user?.email || '',
+              record.status || record.attendanceStatus || '',
+              record.checkInTime ? dayjs(record.checkInTime).format('YYYY-MM-DD HH:mm:ss') : 
+                record.markedAt ? dayjs(record.markedAt).format('YYYY-MM-DD HH:mm:ss') : '',
+              record.notes || record.comment || '',
+              record.markedBy || record.teacherId || '',
+              record.createdAt ? dayjs(record.createdAt).format('YYYY-MM-DD HH:mm:ss') : ''
+            ]);
+          });
+        }
+      }
+
+      // Convert to CSV string
+      const csvContent = [headers, ...csvData]
+        .map(row => 
+          row.map(cell => {
+            const cellStr = String(cell || '');
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+              return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+          }).join(',')
+        )
+        .join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      // Generate filename with filters
+      const filterSuffix = [];
+      if (selectedCourse) {
+        const course = courses.find(c => c.id.toString() === selectedCourse.toString());
+        filterSuffix.push(`course-${course?.title?.replace(/[^a-zA-Z0-9]/g, '_') || selectedCourse}`);
+      }
+      if (selectedDate) {
+        filterSuffix.push(`date-${dayjs(selectedDate).format('YYYY-MM-DD')}`);
+      }
+      if (statusFilter !== 'All') {
+        filterSuffix.push(`status-${statusFilter}`);
+      }
+      
+      const filename = `detailed-attendance-report${filterSuffix.length > 0 ? `_${filterSuffix.join('_')}` : ''}_${dayjs().format('YYYY-MM-DD-HHmm')}.csv`;
+      
+      link.href = url;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Update last export info
+      setLastExport({
+        type: 'Detailed Records',
+        timestamp: dayjs(),
+        recordCount: csvData.length,
+        filename: filename
+      });
+
+      setSnackbar({
+        open: true,
+        message: `Detailed attendance report downloaded successfully! (${csvData.length} records)`,
+        severity: "success"
+      });
+
+    } catch (error) {
+      console.error("Error generating detailed attendance CSV:", error);
+      setSnackbar({
+        open: true,
+        message: "Error generating detailed attendance report",
         severity: "error"
       });
     } finally {
@@ -686,21 +1107,58 @@ export default function AttendancePage() {
   };
 
   // Filter sessions based on search and filters
-  const filteredSessions = sessions.filter(session => {
-    if (globalSearchTerm) {
-      const searchLower = globalSearchTerm.toLowerCase();
-      if (!session.courseName.toLowerCase().includes(searchLower) &&
-          !session.topic.toLowerCase().includes(searchLower)) {
+  let filteredSessions = React.useMemo(() => {
+    if (!sessions || sessions.length === 0) {
+      return [];
+    }
+
+    return sessions.filter(session => {
+      // Safety check - ensure session has required properties
+      if (!session || !session.id) {
+        console.warn('Invalid session object:', session);
         return false;
       }
-    }
-    
-    if (statusFilter !== "All" && session.status !== statusFilter.toLowerCase()) {
-      return false;
-    }
-    
-    return true;
-  });
+      
+      // Global search filter
+      if (globalSearchTerm) {
+        const searchLower = globalSearchTerm.toLowerCase();
+        const courseName = session.courseName || '';
+        const topic = session.topic || '';
+        if (!courseName.toLowerCase().includes(searchLower) &&
+            !topic.toLowerCase().includes(searchLower)) {
+          return false;
+        }
+      }
+      
+      // Course filter
+      if (selectedCourse && session.courseId && session.courseId.toString() !== selectedCourse.toString()) {
+        return false;
+      }
+      
+      // Status filter
+      if (statusFilter !== "All" && session.status && session.status !== statusFilter.toLowerCase()) {
+        return false;
+      }
+      
+      // Date filter
+      if (selectedDate && session.sessionDate) {
+        try {
+          const sessionDate = dayjs(session.sessionDate);
+          const filterDate = dayjs(selectedDate);
+          if (!sessionDate.isSame(filterDate, 'day')) {
+            return false;
+          }
+        } catch (dateError) {
+          console.warn('Date parsing error for session:', session.id, dateError);
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [sessions, selectedCourse, selectedDate, statusFilter, globalSearchTerm]);
+
+
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -761,9 +1219,9 @@ export default function AttendancePage() {
             Analytics
           </Button>
 
-          {selectedCourse && (
+          <Box>
             <Button
-              onClick={() => handleExportAttendance(selectedCourse)}
+              onClick={(e) => setExportMenuAnchor(e.currentTarget)}
               variant="outlined"
               sx={{
                 textTransform: "capitalize",
@@ -774,13 +1232,87 @@ export default function AttendancePage() {
               }}
               color="success"
               startIcon={<DownloadIcon />}
+              endIcon={<ArrowDropDownIcon />}
+              disabled={filteredSessions.length === 0}
             >
-              Export
+              Export Report ({filteredSessions.length})
             </Button>
-          )}
+            <Menu
+              anchorEl={exportMenuAnchor}
+              open={exportMenuOpen}
+              onClose={() => setExportMenuAnchor(null)}
+              PaperProps={{
+                sx: { mt: 1, minWidth: 250 }
+              }}
+            >
+              {/* Export info header */}
+              <Box sx={{ px: 2, py: 1, bgcolor: 'action.hover' }}>
+                <Typography variant="caption" fontWeight="bold">
+                  Export Options
+                </Typography>
+                <Typography variant="caption" display="block" color="text.secondary">
+                  {filteredSessions.length} session{filteredSessions.length !== 1 ? 's' : ''} match current filters
+                </Typography>
+                {lastExport && (
+                  <Typography variant="caption" display="block" color="primary.main" sx={{ mt: 0.5 }}>
+                    Last: {lastExport.type} ({lastExport.recordCount} records)
+                  </Typography>
+                )}
+              </Box>
+              <MenuItem 
+                onClick={async () => {
+                  await generateFilteredCSVReport();
+                  setExportMenuAnchor(null);
+                }}
+                disabled={filteredSessions.length === 0}
+              >
+                <ListItemIcon>
+                  <TableViewIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Sessions Summary"
+                  secondary={`${filteredSessions.length} sessions`}
+                />
+              </MenuItem>
+              <MenuItem 
+                onClick={async () => {
+                  await generateDetailedAttendanceCSV();
+                  setExportMenuAnchor(null);
+                }}
+                disabled={filteredSessions.length === 0}
+              >
+                <ListItemIcon>
+                  <AssignmentIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Detailed Records"
+                  secondary="Student-level data"
+                />
+              </MenuItem>
+              {selectedCourse && (
+                <>
+                  <Divider />
+                  <MenuItem 
+                    onClick={() => {
+                      handleExportAttendance(selectedCourse);
+                      setExportMenuAnchor(null);
+                    }}
+                  >
+                    <ListItemIcon>
+                      <DownloadIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Course Export"
+                      secondary="Server-side export"
+                    />
+                  </MenuItem>
+                </>
+              )}
+            </Menu>
+          </Box>
 
           <Button
-            onClick={fetchSessions}
+            onClick={() => fetchSessions()}
             variant="outlined"
             sx={{
               textTransform: "capitalize",
@@ -812,6 +1344,7 @@ export default function AttendancePage() {
               value={selectedCourse}
               label="Course"
               onChange={(e) => setSelectedCourse(e.target.value)}
+              disabled={courses.length === 0}
               sx={selectedCourse ? { 
                 backgroundColor: 'action.selected',
                 '& .MuiOutlinedInput-notchedOutline': {
@@ -823,7 +1356,7 @@ export default function AttendancePage() {
               <MenuItem value="">
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <SchoolIcon fontSize="small" />
-                  All Courses
+                  {courses.length === 0 ? "No Courses Available" : "All Courses"}
                 </Box>
               </MenuItem>
               {courses.map((course) => (
@@ -851,12 +1384,40 @@ export default function AttendancePage() {
             </Select>
           </FormControl>
 
-          <DatePicker
-            label="Session Date"
-            value={selectedDate}
-            onChange={(newValue) => setSelectedDate(newValue)}
-            renderInput={(params) => <TextField {...params} size="small" />}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <DatePicker
+              label="Session Date"
+              value={selectedDate}
+              onChange={(newValue) => setSelectedDate(newValue)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  placeholder: "All Dates",
+                  sx: selectedDate ? { 
+                    backgroundColor: 'action.selected',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'primary.main',
+                      borderWidth: '2px'
+                    }
+                  } : {}
+                },
+                actionBar: {
+                  actions: ['clear', 'today']
+                }
+              }}
+            />
+            {selectedDate && (
+              <Tooltip title="Show All Dates">
+                <IconButton 
+                  size="small" 
+                  onClick={() => setSelectedDate(null)}
+                  sx={{ color: 'primary.main' }}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
 
           <Button
             onClick={handleClearFilters}
@@ -874,6 +1435,56 @@ export default function AttendancePage() {
             Clear Filters
           </Button>
         </Box>
+
+        {/* Active Filters Summary */}
+        {(selectedCourse || selectedDate || statusFilter !== 'All') && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              mb: 2,
+              p: 1,
+              backgroundColor: 'action.hover',
+              borderRadius: 1,
+              flexWrap: 'wrap'
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 'bold', mr: 1 }}>
+              Active Filters:
+            </Typography>
+            {selectedCourse && (
+              <Chip 
+                label={`Course: ${courses.find(c => c.id.toString() === selectedCourse.toString())?.title || selectedCourse}`}
+                size="small"
+                variant="outlined"
+                onDelete={() => setSelectedCourse("")}
+                sx={{ fontSize: '0.75rem' }}
+              />
+            )}
+            {selectedDate && (
+              <Chip 
+                label={`Date: ${dayjs(selectedDate).format('MMM DD, YYYY')}`}
+                size="small"
+                variant="outlined"
+                onDelete={() => setSelectedDate(null)}
+                sx={{ fontSize: '0.75rem' }}
+              />
+            )}
+            {statusFilter !== 'All' && (
+              <Chip 
+                label={`Status: ${statusFilter}`}
+                size="small"
+                variant="outlined"
+                onDelete={() => setStatusFilter("All")}
+                sx={{ fontSize: '0.75rem' }}
+              />
+            )}
+            <Typography variant="caption" sx={{ ml: 'auto', color: 'text.secondary' }}>
+              {filteredSessions.length} session{filteredSessions.length !== 1 ? 's' : ''} found
+            </Typography>
+          </Box>
+        )}
 
         {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
@@ -921,14 +1532,14 @@ export default function AttendancePage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredSessions.map((session) => (
-                  <TableRow key={session.id} hover>
+                {filteredSessions.length > 0 ? filteredSessions.map((session, index) => (
+                  <TableRow key={session.id || index} hover>
                     <TableCell>
                       <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         <SchoolIcon color="primary" />
                         <Box>
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {session.courseName}
+                            {session.course.title || 'No Course Name'}
                           </Typography>
                         </Box>
                       </Box>
@@ -1015,7 +1626,19 @@ export default function AttendancePage() {
                       </Box>
                     </TableCell>
                   </TableRow>
-                ))}
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      <Typography variant="body2" color="text.secondary">
+                        {loading ? 'Loading sessions...' : 
+                         !dataFetched ? 'Initializing...' :
+                         !getCurrentUser() ? 'Please log in to view sessions' :
+                         courses.length === 0 ? 'No courses available - unable to load sessions' :
+                         'No sessions to display'}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -1027,9 +1650,29 @@ export default function AttendancePage() {
                 py: 4,
               }}
             >
-              <Typography variant="body1" color="text.secondary">
-                No sessions found. {selectedCourse ? "Try selecting a different course" : "Create a new session to get started."}
-              </Typography>
+              {!getCurrentUser() ? (
+                <Box>
+                  <Typography variant="h6" color="error.main" gutterBottom>
+                    Authentication Required
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Please log in to view attendance sessions.
+                  </Typography>
+                </Box>
+              ) : courses.length === 0 ? (
+                <Box>
+                  <Typography variant="h6" color="warning.main" gutterBottom>
+                    No Courses Available
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Unable to load courses. Please check your connection and try refreshing the page.
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography variant="body1" color="text.secondary">
+                  No sessions found. {selectedCourse ? "Try selecting a different course" : selectedDate ? "Try selecting a different date or clear date filter to see all sessions." : "Create a new session to get started."}
+                </Typography>
+              )}
             </Box>
           )}
         </TabPanel>
@@ -1045,9 +1688,11 @@ export default function AttendancePage() {
               Detailed attendance analytics and reports will be displayed here.
             </Typography>
             <Button
+              onClick={async () => await generateFilteredCSVReport()}
               variant="outlined"
               sx={{ mt: 2 }}
               startIcon={<DownloadIcon />}
+              disabled={loading || filteredSessions.length === 0}
             >
               Generate Report
             </Button>
@@ -1191,14 +1836,14 @@ export default function AttendancePage() {
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Avatar src={record.studentAvatar} sx={{ width: 32, height: 32 }}>
-                          {record.studentName.charAt(0)}
+                          {record.user.firstName .charAt(0)}
                         </Avatar>
                         <Box>
                           <Typography variant="body2" fontWeight={500}>
-                            {record.studentName}
+                            {record.user.firstName} {record.user.lastName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {record.studentEmail}
+                            {record.user.username}
                           </Typography>
                         </Box>
                       </Box>
