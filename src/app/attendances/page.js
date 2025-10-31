@@ -26,8 +26,6 @@ import {
   Avatar,
   Checkbox,
   Grid,
-  Tabs,
-  Tab,
   LinearProgress,
   Alert,
   Snackbar,
@@ -56,7 +54,6 @@ import PresentToAllIcon from "@mui/icons-material/PresentToAll";
 import PersonOffIcon from "@mui/icons-material/PersonOff";
 import PersonIcon from "@mui/icons-material/Person";
 import SchoolIcon from "@mui/icons-material/School";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import DownloadIcon from "@mui/icons-material/Download";
 import UploadIcon from "@mui/icons-material/Upload";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -87,21 +84,6 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-const TabPanel = (props) => {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`attendance-tabpanel-${index}`}
-      aria-labelledby={`attendance-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-};
-
 export default function AttendancePage() {
   // Helper function to get current user
   const getCurrentUser = () => {
@@ -128,7 +110,6 @@ export default function AttendancePage() {
   };
 
   // State management
-  const [activeTab, setActiveTab] = useState(0);
   let [courses, setCourses] = useState([]);
   let [sessions, setSessions] = useState([]);
   let [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -387,10 +368,6 @@ export default function AttendancePage() {
   };
 
   // Event handlers
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
-
   const handleCreateSession = async () => {
     try {
       setLoading(true);
@@ -1482,31 +1459,12 @@ export default function AttendancePage() {
           </Box>
         )}
 
-        {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-          <Tabs value={activeTab} onChange={handleTabChange} aria-label="attendance tabs">
-            <Tab 
-              label="Sessions" 
-              icon={<CalendarTodayIcon />} 
-              iconPosition="start"
-            />
-            <Tab 
-              label="Reports" 
-              icon={<BarChartIcon />} 
-              iconPosition="start"
-            />
-          </Tabs>
-        </Box>
-
         {/* Loading */}
         {loading && (
           <Box sx={{ width: "100%", mb: 2 }}>
             <LinearProgress />
           </Box>
         )}
-
-        {/* Sessions Tab */}
-        <TabPanel value={activeTab} index={0}>
           <TableContainer
             component={Paper}
             sx={{
@@ -1671,29 +1629,6 @@ export default function AttendancePage() {
               )}
             </Box>
           )}
-        </TabPanel>
-
-        {/* Reports Tab */}
-        <TabPanel value={activeTab} index={1}>
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <BarChartIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              Attendance Reports
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Detailed attendance analytics and reports will be displayed here.
-            </Typography>
-            <Button
-              onClick={async () => await generateFilteredCSVReport()}
-              variant="outlined"
-              sx={{ mt: 2 }}
-              startIcon={<DownloadIcon />}
-              disabled={loading || filteredSessions.length === 0}
-            >
-              Generate Report
-            </Button>
-          </Box>
-        </TabPanel>
       </Card>
 
       {/* Create Session Dialog */}
