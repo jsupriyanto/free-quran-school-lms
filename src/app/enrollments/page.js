@@ -135,136 +135,6 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-// Sample enrollment data
-const sampleEnrollments = [
-  {
-    id: 1,
-    userId: 101,
-    studentName: "Ahmed Hassan",
-    studentEmail: "ahmed.hassan@example.com",
-    studentAvatar: "https://i.pravatar.cc/150?img=1",
-    courseId: 4,
-    courseName: "Arabic Language Basics",
-    courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/arabic-class-4J8yYQZxKzLjE9qGfm5P6oAYKpKhQs.jpg",
-    enrolledAt: "2025-06-15T00:00:00.000Z",
-    status: "Active",
-    progress: 75,
-    completedLessons: 18,
-    totalLessons: 25,
-    lastAccessed: "2025-10-18T00:00:00.000Z",
-    certificateIssued: false,
-    completionDate: null
-  },
-  {
-    id: 2,
-    userId: 102,
-    studentName: "Fatima Al-Zahra",
-    studentEmail: "fatima.zahra@example.com",
-    studentAvatar: "https://i.pravatar.cc/150?img=2",
-    courseId: 5,
-    courseName: "Hifz for Adults: Juz 30",
-    courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/hifz-adults-juz30-8R2mNvKzJpQw7YgLfA3x9VqE1TcUoP.jpg",
-    enrolledAt: "2025-09-01T00:00:00.000Z",
-    status: "Active", 
-    progress: 45,
-    completedLessons: 14,
-    totalLessons: 30,
-    lastAccessed: "2025-10-19T00:00:00.000Z",
-    certificateIssued: false,
-    completionDate: null
-  },
-  {
-    id: 3,
-    userId: 103,
-    studentName: "Omar Abdullah",
-    studentEmail: "omar.abdullah@example.com",
-    studentAvatar: "https://i.pravatar.cc/150?img=3",
-    courseId: 6,
-    courseName: "IQRA: Learn to Read Quran",
-    courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/iqra-learn-read-quran-2N6kMpWvXcYz5QgHfD8r1LoE9TbUsA.jpg",
-    enrolledAt: "2025-10-01T00:00:00.000Z",
-    status: "Active",
-    progress: 95,
-    completedLessons: 19,
-    totalLessons: 20,
-    lastAccessed: "2025-10-19T00:00:00.000Z",
-    certificateIssued: false,
-    completionDate: null
-  },
-  {
-    id: 4,
-    userId: 104,
-    studentName: "Aisha Ibrahim",
-    studentEmail: "aisha.ibrahim@example.com",
-    studentAvatar: "https://i.pravatar.cc/150?img=4",
-    courseId: 7,
-    courseName: "Islamic Studies 101",
-    courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/islamic-studies-101-4W7pRqXzNmBk1YgLfC3v8PoE2TcUdS.jpg",
-    enrolledAt: "2025-09-15T00:00:00.000Z",
-    status: "Completed",
-    progress: 100,
-    completedLessons: 20,
-    totalLessons: 20,
-    lastAccessed: "2025-10-15T00:00:00.000Z",
-    certificateIssued: true,
-    completionDate: "2025-10-15T00:00:00.000Z"
-  },
-  {
-    id: 5,
-    userId: 105,
-    studentName: "Yusuf Mohamed",
-    studentEmail: "yusuf.mohamed@example.com",
-    studentAvatar: "https://i.pravatar.cc/150?img=5",
-    courseId: 8,
-    courseName: "Tafsir of Surah Al-Fatiha",
-    courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/tafsir-surah-fatiha-9X5tMnKzBpWq3YgHfL7r2VoE8TcUaI.jpg",
-    enrolledAt: "2025-07-20T00:00:00.000Z",
-    status: "On Hold",
-    progress: 30,
-    completedLessons: 3,
-    totalLessons: 10,
-    lastAccessed: "2025-09-30T00:00:00.000Z",
-    certificateIssued: false,
-    completionDate: null
-  },
-  {
-    id: 6,
-    userId: 106,
-    studentName: "Maryam Salah",
-    studentEmail: "maryam.salah@example.com",
-    studentAvatar: "https://i.pravatar.cc/150?img=6",
-    courseId: 9,
-    courseName: "Tajweed Level I",
-    courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/tajweed-level1-1K6mRpWvBcYz7QgHfN9r5LoE3TbUaP.jpg",
-    enrolledAt: "2025-09-25T00:00:00.000Z",
-    status: "Active",
-    progress: 60,
-    completedLessons: 9,
-    totalLessons: 15,
-    lastAccessed: "2025-10-18T00:00:00.000Z",
-    certificateIssued: false,
-    completionDate: null
-  }
-];
-
-const sampleCourses = [
-  { id: 4, title: "Arabic Language Basics" },
-  { id: 5, title: "Hifz for Adults: Juz 30" },
-  { id: 6, title: "IQRA: Learn to Read Quran" },
-  { id: 7, title: "Islamic Studies 101" },
-  { id: 8, title: "Tafsir of Surah Al-Fatiha" },
-  { id: 9, title: "Tajweed Level I" }
-];
-
-const sampleStudents = [
-  { id: 101, name: "Ahmed Hassan", email: "ahmed.hassan@example.com" },
-  { id: 102, name: "Fatima Al-Zahra", email: "fatima.zahra@example.com" },
-  { id: 103, name: "Omar Abdullah", email: "omar.abdullah@example.com" },
-  { id: 104, name: "Aisha Ibrahim", email: "aisha.ibrahim@example.com" },
-  { id: 105, name: "Yusuf Mohamed", email: "yusuf.mohamed@example.com" },
-  { id: 106, name: "Maryam Salah", email: "maryam.salah@example.com" }
-];
-
 function EnrollmentsPage() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -300,17 +170,14 @@ function EnrollmentsPage() {
     try {
       setLoading(true);
       const response = await enrollmentService.getAllEnrollments();
-      
       if (response.data && response.data.length > 0) {
         setEnrollments(response.data);
       } else {
-        // Fallback to sample data for development
-        setEnrollments(sampleEnrollments);
+        setEnrollments([]);
       }
     } catch (error) {
       console.error("Error fetching enrollments:", error);
-      // Fallback to sample data on error
-      setEnrollments(sampleEnrollments);
+      setEnrollments([]);
     } finally {
       setLoading(false);
     }
@@ -327,18 +194,18 @@ function EnrollmentsPage() {
       if (coursesResponse.data) {
         setCourses(coursesResponse.data);
       } else {
-        setCourses(sampleCourses);
+        setCourses([]);
       }
       
       if (studentsResponse.data) {
         setStudents(studentsResponse.data);
       } else {
-        setStudents(sampleStudents);
+        setStudents([]);
       }
     } catch (error) {
       console.error("Error fetching courses/students:", error);
-      setCourses(sampleCourses);
-      setStudents(sampleStudents);
+      setCourses([]);
+      setStudents([]);
     }
   };
 

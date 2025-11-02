@@ -1,4 +1,5 @@
 import http from "./http-common";
+import { isTeacher, getCurrentTeacherId, isAdmin } from "@/utils/accessControl";  
 
 class EnrollmentService {
   // Dashboard stats
@@ -20,7 +21,13 @@ class EnrollmentService {
 
   // CRUD operations
   getAllEnrollments() {
-    return http.get("/enrollment/all-enrollments");
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/enrollment/teacher/${teacherId}`);
+      }
+    }
+    return http.get("/enrollment");
   }
 
   getEnrollmentById(id) {

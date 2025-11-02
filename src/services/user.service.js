@@ -1,7 +1,15 @@
 import http from "./http-common";
+import { isTeacher, getCurrentTeacherId, isAdmin } from "@/utils/accessControl";
 
 class UserDataService {
   getAll() {
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+        if (teacherId) {
+          return http.get(`/user/teacher/${teacherId}`);
+        }
+    }
+
     return http.get("/user");
   }
 
