@@ -73,6 +73,7 @@ import enrollmentService from "@/services/enrollment.service";
 import courseTeacherService from "@/services/course-teacher.service";
 import PageTitle from "@/components/Common/PageTitle";
 import { useSearch } from "@/contexts/SearchContext";
+import { withAttendancesPageProtection } from "@/components/Common/withRoleProtection";
 
 // Styled Components
 const StyledDialog = styled(Dialog)(({ theme }) => ({
@@ -84,7 +85,7 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   },
 }));
 
-export default function AttendancePage() {
+function AttendancePage() {
   // Helper function to get current user
   const getCurrentUser = () => {
     if (typeof window !== 'undefined') {
@@ -1896,3 +1897,5 @@ export default function AttendancePage() {
     </LocalizationProvider>
   );
 }
+
+export default withAttendancesPageProtection(AttendancePage);

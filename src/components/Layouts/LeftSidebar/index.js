@@ -3,7 +3,7 @@
 import React from "react";
 import { Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { sidebarDataEN, sidebarDataAR, sidebarDataDE } from "./SidebarData";
+import { getSidebarDataEN, getSidebarDataAR, getSidebarDataDE } from "./RoleBasedSidebarData";
 import SubMenu from "./SubMenu";
 import Link from "next/link";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -75,7 +75,7 @@ const Sidebar = ({ toogleActive }) => {
 							</IconButton>
 						</Box>
 
-						{sidebarDataEN.map((item, index) => {
+						{getSidebarDataEN().map((item, index) => {
 							return <SubMenu item={item} key={index} />;
 						})}
 					</SidebarWrap>

@@ -46,6 +46,7 @@ import { getCountryDataList } from "countries-list";
 import authService from "@/services/auth.service";
 import ImageUpload from "@/components/Common/ImageUpload";
 import { useSearch } from "@/contexts/SearchContext";
+import { withUsersPageProtection } from "@/components/Common/withRoleProtection";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
@@ -178,7 +179,7 @@ const getRoleName = (roleId) => {
   return role ? role.name : 'User';
 };
 
-export default function MembersList() {
+function MembersList() {
   // Table
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -1232,3 +1233,5 @@ export default function MembersList() {
     </>
   );
 }
+
+export default withUsersPageProtection(MembersList);

@@ -65,6 +65,7 @@ import {
   Separator,
   Toolbar,
 } from "react-simple-wysiwyg";
+import { withCoursesPageProtection } from "@/components/Common/withRoleProtection";
 
 // Styled components
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -146,7 +147,7 @@ TablePaginationActions.propTypes = {
   rowsPerPage: PropTypes.number.isRequired,
 };
 
-export default function CoursesPage() {
+function CoursesPage() {
   const router = useRouter();
   const { globalSearchTerm } = useSearch();
   const [page, setPage] = React.useState(0);
@@ -1165,3 +1166,5 @@ export default function CoursesPage() {
     </>
   );
 }
+
+export default withCoursesPageProtection(CoursesPage);

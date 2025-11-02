@@ -48,6 +48,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
+import { withEnrollmentsPageProtection } from "@/components/Common/withRoleProtection";
 import Autocomplete from "@mui/material/Autocomplete";
 import PersonIcon from "@mui/icons-material/Person";
 import SchoolIcon from "@mui/icons-material/School";
@@ -264,7 +265,7 @@ const sampleStudents = [
   { id: 106, name: "Maryam Salah", email: "maryam.salah@example.com" }
 ];
 
-export default function EnrollmentsPage() {
+function EnrollmentsPage() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [enrollments, setEnrollments] = React.useState([]);
@@ -1369,3 +1370,5 @@ export default function EnrollmentsPage() {
     </>
   );
 }
+
+export default withEnrollmentsPageProtection(EnrollmentsPage);

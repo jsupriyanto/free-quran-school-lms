@@ -1,16 +1,38 @@
 import http from "./http-common";
+import { isTeacher, getCurrentTeacherId, isAdmin } from "@/utils/accessControl";
 
 class AttendanceService {
   // Dashboard stats
   getAttendanceStats() {
+    // If user is a teacher, get stats for their courses only
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/attendance/dashboard/stats/teacher/${teacherId}`);
+      }
+    }
     return http.get("/attendance/dashboard/stats");
   }
 
   getAttendanceOverview() {
+    // If user is a teacher, get overview for their courses only
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/attendance/dashboard/overview/teacher/${teacherId}`);
+      }
+    }
     return http.get("/attendance/dashboard/overview");
   }
 
   getAttendanceTrends() {
+    // If user is a teacher, get trends for their courses only
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/attendance/dashboard/trends/teacher/${teacherId}`);
+      }
+    }
     return http.get("/attendance/dashboard/trends");
   }
 
@@ -20,6 +42,13 @@ class AttendanceService {
   }
 
   getAllSessions() {
+    // If user is a teacher, get sessions for their courses only
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/attendance/sessions/teacher/${teacherId}`);
+      }
+    }
     return http.get("/attendance/sessions");
   }
 
@@ -98,6 +127,15 @@ class AttendanceService {
   // Search and filtering
   searchAttendance(query, filters = {}) {
     const params = { query, ...filters };
+    
+    // If user is a teacher, add teacher filter
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        params.teacherId = teacherId;
+      }
+    }
+    
     const queryParams = new URLSearchParams(params).toString();
     return http.get(`/attendance/search?${queryParams}`);
   }

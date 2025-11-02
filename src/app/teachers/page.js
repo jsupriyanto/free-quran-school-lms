@@ -47,6 +47,7 @@ import teacherService from "@/services/teacher.service";
 import userService from "@/services/user.service";
 import ImageUpload from "@/components/Common/ImageUpload";
 import { useSearch } from "@/contexts/SearchContext";
+import { withTeachersPageProtection } from "@/components/Common/withRoleProtection";
 
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
@@ -162,7 +163,7 @@ TeachersLists.propTypes = {
 
 const currentUser = authService.getCurrentUser();
 
-export default function TeachersList() {
+function TeachersList() {
   // Table
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -1316,3 +1317,5 @@ export default function TeachersList() {
     </>
   );
 }
+
+export default withTeachersPageProtection(TeachersList);

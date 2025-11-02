@@ -12,8 +12,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PageTitle from "@/components/Common/PageTitle";
 import authService from "@/services/auth.service";
+import { withDashboardProtection } from "@/components/Common/withRoleProtection";
+import { isAdmin, isTeacher } from "@/utils/accessControl";
 
-export default function Page() {
+function Page() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -81,7 +83,8 @@ export default function Page() {
         </Grid>
 
         <Grid size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 4 }}>
-          <TopInstructor />
+          {/* TopInstructor - Admin only */}
+          {isAdmin() && <TopInstructor />}
 
           <TopStudents />
 
@@ -93,3 +96,5 @@ export default function Page() {
     </>
   );
 }
+
+export default withDashboardProtection(Page);
