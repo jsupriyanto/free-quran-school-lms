@@ -135,6 +135,44 @@ export default function CourseOverviewPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      {/* Course Header with Navigation */}
+      <Card sx={{ p: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+              {course.title}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Chip 
+                label={course.level || "Beginner"} 
+                color="primary" 
+                size="small" 
+              />
+              <Typography variant="body2" color="text.secondary">
+                Course ID: {courseId}
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button 
+              variant="outlined" 
+              onClick={() => window.location.href = `/courses/${courseId}/teachers`}
+              startIcon={<PeopleIcon />}
+            >
+              Teachers
+            </Button>
+            <Button 
+              variant="contained" 
+              onClick={() => window.location.href = `/courses/${courseId}/schedules`}
+              startIcon={<CalendarTodayIcon />}
+            >
+              Schedules
+            </Button>
+          </Box>
+        </Box>
+      </Card>
+
       {/* Course Statistics */}
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={3}>

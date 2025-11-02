@@ -41,6 +41,7 @@ class AttendanceService {
     return http.post("/attendance/sessions", data);
   }
 
+  // Get sessions with integration to scheduled sessions
   getAllSessions() {
     // If user is a teacher, get sessions for their courses only
     if (isTeacher() && !isAdmin()) {
@@ -50,6 +51,17 @@ class AttendanceService {
       }
     }
     return http.get("/attendance/sessions");
+  }
+
+  // Get all sessions including scheduled ones
+  getAllSessionsWithScheduled() {
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/attendance/sessions/all/teacher/${teacherId}`);
+      }
+    }
+    return http.get("/attendance/sessions/all");
   }
 
   getSessionsByCourse(courseId) {
@@ -96,6 +108,173 @@ class AttendanceService {
 
   deleteAttendanceRecord(recordId) {
     return http.delete(`/attendance/records/${recordId}`);
+  }
+
+  // ==================== SCHEDULED SESSION INTEGRATION ====================
+
+  /**
+   * Create attendance session from scheduled session
+   */
+  createSessionFromSchedule(scheduledSessionId, sessionData = {}) {
+    return http.post(`/attendance/sessions/from-schedule/${scheduledSessionId}`, sessionData);
+  }
+
+  /**
+   * Get attendance sessions linked to scheduled sessions
+   */
+  getSessionsFromScheduledSessions(filters = {}) {
+    const queryParams = new URLSearchParams(filters).toString();
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/attendance/sessions/scheduled/teacher/${teacherId}${queryParams ? `?${queryParams}` : ''}`);
+      }
+    }
+    return http.get(`/attendance/sessions/scheduled${queryParams ? `?${queryParams}` : ''}`);
+  }
+
+  /**
+   * Start attendance for a scheduled session
+   */
+  startScheduledSessionAttendance(scheduledSessionId, options = {}) {
+    return http.post(`/attendance/sessions/scheduled/${scheduledSessionId}/start`, options);
+  }
+
+  /**
+   * Get scheduled sessions ready for attendance
+   */
+  getScheduledSessionsForAttendance(filters = {}) {
+    const queryParams = new URLSearchParams({
+      upcoming: true,
+      readyForAttendance: true,
+      ...filters
+    }).toString();
+    
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/scheduled-sessions/attendance/teacher/${teacherId}${queryParams ? `?${queryParams}` : ''}`);
+      }
+    }
+    return http.get(`/scheduled-sessions/attendance${queryParams ? `?${queryParams}` : ''}`);
+  }
+
+  /**
+   * Complete a scheduled session attendance
+   */
+  completeScheduledSessionAttendance(scheduledSessionId, attendanceData) {
+    return http.put(`/attendance/sessions/scheduled/${scheduledSessionId}/complete`, attendanceData);
+  }
+
+  /**
+   * Get attendance statistics for scheduled sessions
+   */
+  getScheduledSessionAttendanceStats(filters = {}) {
+    const queryParams = new URLSearchParams(filters).toString();
+    
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/attendance/stats/scheduled/teacher/${teacherId}${queryParams ? `?${queryParams}` : ''}`);
+      }
+    }
+    return http.get(`/attendance/stats/scheduled${queryParams ? `?${queryParams}` : ''}`);
+  }
+
+  /**
+   * Sync attendance sessions with scheduled sessions
+   */
+  syncWithScheduledSessions(courseId = null) {
+    const endpoint = courseId ? 
+      `/attendance/sessions/sync/course/${courseId}` : 
+      '/attendance/sessions/sync';
+    return http.post(endpoint);
+  }
+
+  /**
+   * Get attendance sessions by schedule ID
+   */
+  getSessionsBySchedule(scheduleId) {
+    return http.get(`/attendance/sessions/schedule/${scheduleId}`);
+  }
+
+  /**
+   * Create multiple attendance sessions from schedule pattern
+   */
+  createSessionsFromSchedulePattern(scheduleId, options = {}) {
+    return http.post(`/attendance/sessions/from-schedule-pattern/${scheduleId}`, options);
+  }
+
+  /**
+   * Get attendance summary for a specific schedule
+   */
+  getAttendanceSummaryBySchedule(scheduleId, filters = {}) {
+    const queryParams = new URLSearchParams(filters).toString();
+    return http.get(`/attendance/summary/schedule/${scheduleId}${queryParams ? `?${queryParams}` : ''}`);
+  }
+
+  /**
+   * Mark attendance for all enrolled students in a scheduled session
+   */
+  bulkMarkScheduledAttendance(scheduledSessionId, attendanceData) {
+    return http.post(`/attendance/sessions/scheduled/${scheduledSessionId}/bulk-mark`, attendanceData);
+  }
+
+  /**
+   * Get upcoming scheduled sessions that need attendance
+   */
+  getUpcomingScheduledSessions(filters = {}) {
+    const queryParams = new URLSearchParams({
+      needsAttendance: true,
+      upcoming: true,
+      ...filters
+    }).toString();
+    
+    if (isTeacher() && !isAdmin()) {
+      const teacherId = getCurrentTeacherId();
+      if (teacherId) {
+        return http.get(`/scheduled-sessions/upcoming/teacher/${teacherId}${queryParams ? `?${queryParams}` : ''}`);
+      }
+    }
+    return http.get(`/scheduled-sessions/upcoming${queryParams ? `?${queryParams}` : ''}`);
+  }
+
+  /**
+   * Auto-generate attendance sessions for active course schedules
+   */
+  autoGenerateAttendanceFromSchedules(courseId = null, dateRange = null) {
+    const data = { courseId, dateRange };
+    return http.post('/attendance/sessions/auto-generate', data);
+  }
+
+  /**
+   * Get attendance patterns and insights for scheduled courses
+   */
+  getScheduledAttendanceInsights(courseId, scheduleId = null) {
+    const params = scheduleId ? `?scheduleId=${scheduleId}` : '';
+    return http.get(`/attendance/insights/course/${courseId}${params}`);
+  }
+
+  /**
+   * Update recurring attendance for schedule-based sessions
+   */
+  updateRecurringAttendance(scheduleId, attendancePattern) {
+    return http.put(`/attendance/recurring/schedule/${scheduleId}`, attendancePattern);
+  }
+
+  /**
+   * Get attendance conflicts between manual sessions and scheduled sessions
+   */
+  getAttendanceConflicts(courseId, dateRange = null) {
+    const params = dateRange ? `?from=${dateRange.from}&to=${dateRange.to}` : '';
+    return http.get(`/attendance/conflicts/course/${courseId}${params}`);
+  }
+
+  /**
+   * Resolve attendance conflicts by merging or choosing sessions
+   */
+  resolveAttendanceConflicts(conflictId, resolution) {
+    return http.post(`/attendance/conflicts/${conflictId}/resolve`, resolution);
   }
 
   // Reporting and Analytics

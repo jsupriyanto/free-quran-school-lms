@@ -71,7 +71,9 @@ import attendanceService from "@/services/attendance.service";
 import courseService from "@/services/course.service";
 import enrollmentService from "@/services/enrollment.service";
 import courseTeacherService from "@/services/course-teacher.service";
+import courseScheduleService from "@/services/course-schedule.service";
 import PageTitle from "@/components/Common/PageTitle";
+import ScheduledSessionsTable from "@/components/Attendance/ScheduledSessionsTable";
 import { useSearch } from "@/contexts/SearchContext";
 import { withAttendancesPageProtection } from "@/components/Common/withRoleProtection";
 
@@ -135,6 +137,12 @@ function AttendancePage() {
   // Export tracking
   const [lastExport, setLastExport] = useState(null);
   
+  // Schedule management
+  const [showScheduledSessions, setShowScheduledSessions] = useState(true);
+  const [scheduleRefreshTrigger, setScheduleRefreshTrigger] = useState(0);
+  const [courseSchedules, setCourseSchedules] = useState([]);
+  const [scheduledSessionsData, setScheduledSessionsData] = useState([]);
+  
   // Form data
   const [sessionForm, setSessionForm] = useState({
     courseId: "",
@@ -186,6 +194,21 @@ function AttendancePage() {
       fetchEnrollmentsByCourse(selectedCourse);
     }
   }, [selectedCourse]);
+
+  // Fetch course schedules when courses or selected course changes
+  useEffect(() => {
+    if (courses.length > 0) {
+      fetchCourseSchedules();
+      fetchScheduledSessions();
+    }
+  }, [courses, selectedCourse]);
+
+  // Update scheduled sessions when trigger changes
+  useEffect(() => {
+    if (showScheduledSessions && courses.length > 0) {
+      fetchScheduledSessions();
+    }
+  }, [scheduleRefreshTrigger, showScheduledSessions]);
 
   const fetchCourses = async () => {
     try {
@@ -326,6 +349,116 @@ function AttendancePage() {
     } catch (error) {
       console.error("Error fetching attendance:", error);
       setAttendanceRecords([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Course schedules functions
+  const fetchCourseSchedules = async () => {
+    try {
+      if (selectedCourse) {
+        const response = await courseScheduleService.getSchedulesByCourse(selectedCourse);
+        if (response.data) {
+          setCourseSchedules(response.data);
+        }
+      } else if (courses.length > 0) {
+        // Fetch all schedules for all courses
+        const schedulePromises = courses.map(course => 
+          courseScheduleService.getSchedulesByCourse(course.id)
+        );
+        const scheduleResponses = await Promise.all(schedulePromises);
+        const allSchedules = scheduleResponses.flatMap(response => response.data || []);
+        setCourseSchedules(allSchedules);
+      }
+    } catch (error) {
+      console.error("Error fetching course schedules:", error);
+      setCourseSchedules([]);
+    }
+  };
+
+  const fetchScheduledSessions = async () => {
+    try {
+      const filters = {
+        ...(selectedCourse && { courseId: selectedCourse }),
+        upcoming: true,
+        readyForAttendance: true
+      };
+      
+      const response = await attendanceService.getScheduledSessionsForAttendance(filters);
+      if (response.data) {
+        setScheduledSessionsData(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching scheduled sessions:", error);
+      setScheduledSessionsData([]);
+    }
+  };
+
+  const handleScheduledSessionStart = async (session) => {
+    try {
+      await attendanceService.startScheduledSessionAttendance(session.id);
+      setScheduleRefreshTrigger(prev => prev + 1);
+      
+      setSnackbar({
+        open: true,
+        message: "Scheduled session started successfully!",
+        severity: "success"
+      });
+      
+      // Refresh regular sessions too
+      if (selectedCourse) {
+        fetchSessionsByCourse(selectedCourse);
+      } else {
+        fetchSessions();
+      }
+    } catch (error) {
+      console.error("Error starting scheduled session:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to start scheduled session",
+        severity: "error"
+      });
+    }
+  };
+
+  const handleScheduledSessionUpdate = async () => {
+    setScheduleRefreshTrigger(prev => prev + 1);
+    fetchScheduledSessions();
+  };
+
+  const handleAutoGenerateFromSchedules = async () => {
+    try {
+      setLoading(true);
+      const response = await attendanceService.autoGenerateAttendanceFromSchedules(
+        selectedCourse,
+        {
+          from: dayjs().format('YYYY-MM-DD'),
+          to: dayjs().add(30, 'days').format('YYYY-MM-DD')
+        }
+      );
+      
+      if (response.data) {
+        setSnackbar({
+          open: true,
+          message: `Generated ${response.data.count || 0} attendance sessions from schedules`,
+          severity: "success"
+        });
+        
+        // Refresh sessions
+        if (selectedCourse) {
+          fetchSessionsByCourse(selectedCourse);
+        } else {
+          fetchSessions();
+        }
+      }
+    } catch (error) {
+      console.error("Error auto-generating sessions:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to generate sessions from schedules",
+        severity: "error"
+      });
     } finally {
       setLoading(false);
     }
@@ -1466,6 +1599,85 @@ function AttendancePage() {
             <LinearProgress />
           </Box>
         )}
+
+        {/* Scheduled Sessions Section */}
+        {showScheduledSessions && courseSchedules.length > 0 && (
+          <Card sx={{ mb: 3, p: 0, borderRadius: "7px", boxShadow: "none", border: "1px solid #eee" }}>
+            <Box sx={{ 
+              p: 2, 
+              borderBottom: "1px solid #eee",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
+            }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <ScheduleIcon color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Scheduled Sessions
+                </Typography>
+                <Chip 
+                  label={scheduledSessionsData.length}
+                  size="small"
+                  color="primary"
+                  sx={{ fontSize: "11px" }}
+                />
+              </Box>
+              
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={handleAutoGenerateFromSchedules}
+                  disabled={loading}
+                  sx={{ textTransform: "none" }}
+                >
+                  Auto Generate
+                </Button>
+                
+                <Button
+                  size="small"
+                  variant={showScheduledSessions ? "contained" : "outlined"}
+                  onClick={() => setShowScheduledSessions(!showScheduledSessions)}
+                  sx={{ textTransform: "none" }}
+                >
+                  {showScheduledSessions ? "Hide" : "Show"} Scheduled
+                </Button>
+              </Box>
+            </Box>
+            
+            <ScheduledSessionsTable
+              onSessionStart={handleScheduledSessionStart}
+              onSessionUpdate={handleScheduledSessionUpdate}
+              refreshTrigger={scheduleRefreshTrigger}
+              courseFilter={selectedCourse}
+            />
+          </Card>
+        )}
+
+        {/* Regular Sessions Table */}
+        <Card sx={{ borderRadius: "7px", boxShadow: "none", border: "1px solid #eee" }}>
+          <Box sx={{ 
+            p: 2, 
+            borderBottom: "1px solid #eee",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between"
+          }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <PresentToAllIcon color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Manual Sessions
+              </Typography>
+              <Chip 
+                label={filteredSessions.length}
+                size="small"
+                color="secondary"
+                sx={{ fontSize: "11px" }}
+              />
+            </Box>
+          </Box>
+          
           <TableContainer
             component={Paper}
             sx={{
@@ -1630,6 +1842,7 @@ function AttendancePage() {
               )}
             </Box>
           )}
+        </Card>
       </Card>
 
       {/* Create Session Dialog */}

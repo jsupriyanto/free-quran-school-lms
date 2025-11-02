@@ -41,6 +41,7 @@ import Grid from "@mui/material/Grid";
 import enrollmentService from "@/services/enrollment.service";
 import courseService from "@/services/course.service";
 import userService from "@/services/user.service";
+import courseScheduleService from "@/services/course-schedule.service";
 import { useSearch } from "@/contexts/SearchContext";
 import { useRouter } from "next/navigation";
 import Select from "@mui/material/Select";
@@ -54,6 +55,9 @@ import PersonIcon from "@mui/icons-material/Person";
 import SchoolIcon from "@mui/icons-material/School";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import EventIcon from "@mui/icons-material/Event";
 
 // Pagination actions component
 function TablePaginationActions(props) {
@@ -150,6 +154,10 @@ function EnrollmentsPage() {
   const [students, setStudents] = React.useState([]);
   const [statusFilter, setStatusFilter] = React.useState("All");
   const [courseFilter, setCourseFilter] = React.useState("All");
+  const [scheduleFilter, setScheduleFilter] = React.useState("All");
+  const [showScheduleView, setShowScheduleView] = React.useState(false);
+  const [courseSchedules, setCourseSchedules] = React.useState([]);
+  const [enrollmentsWithSchedules, setEnrollmentsWithSchedules] = React.useState([]);
 
   const { globalSearchTerm } = useSearch();
   const router = useRouter();
@@ -172,6 +180,14 @@ function EnrollmentsPage() {
       const response = await enrollmentService.getAllEnrollments();
       if (response.data && response.data.length > 0) {
         setEnrollments(response.data);
+        
+        // If showing schedule view, also fetch schedule-enhanced data
+        if (showScheduleView) {
+          const enhancedResponse = await enrollmentService.getActiveEnrollmentsWithSchedules();
+          if (enhancedResponse.data) {
+            setEnrollmentsWithSchedules(enhancedResponse.data);
+          }
+        }
       } else {
         setEnrollments([]);
       }
@@ -180,6 +196,26 @@ function EnrollmentsPage() {
       setEnrollments([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch course schedules for filtering
+  const fetchCourseSchedules = async () => {
+    try {
+      const uniqueCourseIds = [...new Set(enrollments.map(e => e.courseId))];
+      const schedulePromises = uniqueCourseIds.map(courseId => 
+        courseScheduleService.getSchedulesByCourse(courseId)
+      );
+      
+      const scheduleResponses = await Promise.all(schedulePromises);
+      const allSchedules = scheduleResponses.flatMap(response => 
+        response.data || []
+      );
+      
+      setCourseSchedules(allSchedules);
+    } catch (error) {
+      console.error("Error fetching course schedules:", error);
+      setCourseSchedules([]);
     }
   };
 
@@ -228,6 +264,20 @@ function EnrollmentsPage() {
     fetchCoursesAndStudents();
   }, []);
 
+  // Fetch schedules when enrollments change
+  useEffect(() => {
+    if (enrollments.length > 0) {
+      fetchCourseSchedules();
+    }
+  }, [enrollments]);
+
+  // Re-fetch enrollments when schedule view changes
+  useEffect(() => {
+    if (showScheduleView) {
+      fetchEnrollments();
+    }
+  }, [showScheduleView]);
+
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -260,6 +310,23 @@ function EnrollmentsPage() {
       filtered = filtered.filter(enrollment => enrollment.courseId.toString() === courseFilter);
     }
 
+    // Apply schedule filter
+    if (scheduleFilter !== "All" && courseSchedules.length > 0) {
+      const schedulesByModerator = courseSchedules.filter(schedule => {
+        if (scheduleFilter === "Active") {
+          return schedule.isActive;
+        } else if (scheduleFilter === "Inactive") {
+          return !schedule.isActive;
+        }
+        return schedule.id.toString() === scheduleFilter;
+      });
+      
+      const courseIdsWithSchedule = schedulesByModerator.map(s => s.courseId);
+      filtered = filtered.filter(enrollment => 
+        courseIdsWithSchedule.includes(enrollment.courseId)
+      );
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       let aValue = a[orderBy];
@@ -283,7 +350,7 @@ function EnrollmentsPage() {
     });
 
     setFilteredEnrollments(filtered);
-  }, [enrollments, globalSearchTerm, orderBy, order, statusFilter, courseFilter]);
+  }, [enrollments, globalSearchTerm, orderBy, order, statusFilter, courseFilter, scheduleFilter, courseSchedules]);
 
   const handleSort = (column) => {
     const isAsc = orderBy === column && order === "asc";
@@ -453,6 +520,8 @@ function EnrollmentsPage() {
   const handleClearFilters = () => {
     setStatusFilter("All");
     setCourseFilter("All");
+    setScheduleFilter("All");
+    setShowScheduleView(false);
     setPage(0);
   };
 
@@ -600,6 +669,65 @@ function EnrollmentsPage() {
               ))}
             </Select>
           </FormControl>
+          
+          <FormControl sx={{ minWidth: 180 }} size="small">
+            <InputLabel>Schedule</InputLabel>
+            <Select
+              value={scheduleFilter}
+              label="Schedule"
+              onChange={(e) => setScheduleFilter(e.target.value)}
+              sx={scheduleFilter !== "All" ? { 
+                backgroundColor: 'action.selected',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'primary.main',
+                  borderWidth: '2px'
+                }
+              } : {}}
+            >
+              <MenuItem value="All">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ScheduleIcon fontSize="small" />
+                  All Schedules
+                </Box>
+              </MenuItem>
+              <MenuItem value="Active">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <EventIcon fontSize="small" color="success" />
+                  Active Schedules
+                </Box>
+              </MenuItem>
+              <MenuItem value="Inactive">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ScheduleIcon fontSize="small" color="disabled" />
+                  Inactive Schedules
+                </Box>
+              </MenuItem>
+              {courseSchedules.map((schedule) => (
+                <MenuItem key={schedule.id} value={schedule.id.toString()}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CalendarTodayIcon fontSize="small" color="primary" />
+                    {schedule.title || `${schedule.dayOfWeek} - ${schedule.startTime}`}
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Button
+            variant={showScheduleView ? "contained" : "outlined"}
+            startIcon={<ScheduleIcon />}
+            onClick={() => setShowScheduleView(!showScheduleView)}
+            size="small"
+            sx={{ 
+              textTransform: 'none',
+              ...(showScheduleView && {
+                backgroundColor: 'primary.main',
+                color: 'primary.contrastText'
+              })
+            }}
+          >
+            {showScheduleView ? 'Schedule View' : 'Show Schedules'}
+          </Button>
 
           <Button
             onClick={handleClearFilters}
@@ -750,6 +878,18 @@ function EnrollmentsPage() {
                     </Box>
                   </TableCell>
 
+                  {showScheduleView && (
+                    <TableCell
+                      sx={{ fontWeight: "500", fontSize: "14px" }}
+                      className="text-black"
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <ScheduleIcon sx={{ fontSize: "16px", mr: "5px" }} />
+                        Schedule Info
+                      </Box>
+                    </TableCell>
+                  )}
+
                   <TableCell
                     sx={{ fontWeight: "500", fontSize: "14px" }}
                     className="text-black"
@@ -862,6 +1002,37 @@ function EnrollmentsPage() {
                           {enrollment.completionDate ? formatDate(enrollment.completionDate) : "Not completed"}
                         </Typography>
                       </TableCell>
+
+                      {showScheduleView && (
+                        <TableCell>
+                          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            {courseSchedules
+                              .filter(schedule => schedule.courseId === enrollment.courseId)
+                              .slice(0, 2) // Show max 2 schedules
+                              .map((schedule, index) => (
+                                <Chip
+                                  key={schedule.id}
+                                  icon={<CalendarTodayIcon />}
+                                  label={`${schedule.dayOfWeek} ${schedule.startTime}`}
+                                  size="small"
+                                  color={schedule.isActive ? "primary" : "default"}
+                                  variant={schedule.isActive ? "filled" : "outlined"}
+                                  sx={{ fontSize: "11px", height: "20px" }}
+                                />
+                              ))}
+                            {courseSchedules.filter(schedule => schedule.courseId === enrollment.courseId).length > 2 && (
+                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: "10px" }}>
+                                +{courseSchedules.filter(schedule => schedule.courseId === enrollment.courseId).length - 2} more
+                              </Typography>
+                            )}
+                            {courseSchedules.filter(schedule => schedule.courseId === enrollment.courseId).length === 0 && (
+                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: "11px" }}>
+                                No active schedules
+                              </Typography>
+                            )}
+                          </Box>
+                        </TableCell>
+                      )}
 
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center" }}>

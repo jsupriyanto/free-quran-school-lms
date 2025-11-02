@@ -16,6 +16,7 @@ import TeacherIcon from "@mui/icons-material/Person";
 import CourseIcon from "@mui/icons-material/PlayLesson";
 import EnrollmentIcon from "@mui/icons-material/School";
 import AttendanceIcon from "@mui/icons-material/PresentToAll";
+import ScheduleIcon from "@mui/icons-material/Schedule";
 
 export const sidebarDataEN = [
 	{
@@ -46,6 +47,12 @@ export const sidebarDataEN = [
 		title: "Courses",
 		path: "/courses/",
 		icon: <CourseIcon />,
+		subNav: [],
+	},
+	{
+		title: "Schedules",
+		path: "/schedules/",
+		icon: <ScheduleIcon />,
 		subNav: [],
 	},
 	{
@@ -404,6 +411,12 @@ export const sidebarDataAR = [
 		title: "الدورات",
 		path: "/courses/",
 		icon: <CourseIcon />,
+		subNav: [],
+	},
+	{
+		title: "الجداول الزمنية",
+		path: "/schedules/",
+		icon: <ScheduleIcon />,
 		subNav: [],
 	},
 	{
@@ -791,6 +804,12 @@ export const sidebarDataDE = [
 		title: "Anwesenheit",
 		path: "/attendances/",
 		icon: <AttendanceIcon />,
+		subNav: [],
+	},
+	{
+		title: "Zeitpläne",
+		path: "/schedules/",
+		icon: <ScheduleIcon />,
 		subNav: [],
 	},
 	{

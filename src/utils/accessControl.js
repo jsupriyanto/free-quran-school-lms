@@ -157,6 +157,14 @@ export const canViewCalendar = () => {
 };
 
 /**
+ * Check if user can view schedules
+ * @returns {boolean} True if user can view schedules
+ */
+export const canViewSchedules = () => {
+  return canAccessTeacher();
+};
+
+/**
  * Check if user should be blocked from accessing the main app
  * @returns {boolean} True if user should be blocked
  */

@@ -12,6 +12,7 @@ import TeacherIcon from "@mui/icons-material/Person";
 import CourseIcon from "@mui/icons-material/PlayLesson";
 import EnrollmentIcon from "@mui/icons-material/School";
 import AttendanceIcon from "@mui/icons-material/PresentToAll";
+import ScheduleIcon from "@mui/icons-material/Schedule";
 
 import {
   canViewDashboard,
@@ -21,6 +22,7 @@ import {
   canViewCourses,
   canViewEnrollments,
   canViewAttendances,
+  canViewSchedules,
   isAuthenticated
 } from "@/utils/accessControl";
 
@@ -60,6 +62,13 @@ const getBaseMenuItems = () => [
     icon: <CourseIcon />,
     subNav: [],
     permission: canViewCourses
+  },
+  {
+    title: "Schedules",
+    path: "/schedules/",
+    icon: <ScheduleIcon />,
+    subNav: [],
+    permission: canViewSchedules
   },
   {
     title: "Enrollments",
@@ -163,6 +172,13 @@ export const getSidebarDataDE = () => filterMenuByPermissions([
     permission: canViewCourses
   },
   {
+    title: "Zeitpläne",
+    path: "/schedules/",
+    icon: <ScheduleIcon />,
+    subNav: [],
+    permission: canViewSchedules
+  },
+  {
     title: "Anmeldungen",
     path: "/enrollments/",
     icon: <EnrollmentIcon />,
@@ -243,6 +259,13 @@ export const getSidebarDataAR = () => filterMenuByPermissions([
     icon: <CourseIcon />,
     subNav: [],
     permission: canViewCourses
+  },
+  {
+    title: "الجداول الزمنية",
+    path: "/schedules/",
+    icon: <ScheduleIcon />,
+    subNav: [],
+    permission: canViewSchedules
   },
   {
     title: "التسجيلات",
