@@ -4,9 +4,10 @@ import React from "react";
 import PageTitle from "@/components/Common/PageTitle";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import events from "@/components/Apps/Calendar/Events";
+import interactionPlugin from "@fullcalendar/interaction";
+import { getEvents } from "@/components/Apps/Calendar/Events";
 import Card from "@mui/material/Card";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, CircularProgress, Tooltip } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Grid from "@mui/material/Grid";
 import Backdrop from "@mui/material/Backdrop";
@@ -36,20 +37,81 @@ const style = {
 };
 
 const Calendar = () => {
+  // Add custom CSS for enhanced tooltips
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .fc-event {
+        position: relative;
+      }
+      .fc-event:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+      }
+      .fc-event[title]:hover::after {
+        white-space: pre-line;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  // Events state
+  const [events, setEvents] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  // Function to refresh events
+  const refreshEvents = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const fetchedEvents = await getEvents();
+      setEvents(fetchedEvents);
+    } catch (error) {
+      console.error('Failed to load events:', error);
+      setEvents([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load events on component mount
+  React.useEffect(() => {
+    refreshEvents();
+  }, [refreshEvents]);
   
   // Add event modal
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    // Handle form submission here
-    const formData = {
-      email: data.get("email"),
-      password: data.get("password"),
-    };
+    
+    const eventName = data.get("eventName");
+    
+    if (eventName && value) {
+      // Create a new event object
+      const newEvent = {
+        title: eventName,
+        start: value.toISOString(),
+        end: value.add(1, 'hour').toISOString(), // Default 1 hour duration
+        description: `Event: ${eventName}`,
+        backgroundColor: '#2563eb',
+        borderColor: '#2563eb'
+      };
+
+      // Add the new event to the current events
+      setEvents(prevEvents => [...prevEvents, { ...newEvent, id: Date.now() }]);
+      
+      // Close the modal
+      handleClose();
+      
+      // Reset the form
+      setValue(dayjs());
+    }
   };
 
   // Date & Time ickers
@@ -86,16 +148,6 @@ const Calendar = () => {
           }}
           className="for-dark-bottom-border"
         >
-          <Typography
-            as="h3"
-            sx={{
-              fontSize: 18,
-              fontWeight: 500,
-            }}
-          >
-            Calendar
-          </Typography>
-
           <Button
             onClick={handleOpen}
             variant="contained"
@@ -116,13 +168,62 @@ const Calendar = () => {
           </Button>
         </Box>
 
-        <FullCalendar
-          defaultView="dayGridMonth"
-          plugins={[dayGridPlugin]}
-          events={events}
-          displayEventEnd="true"
-          eventColor={"#" + Math.floor(Math.random() * 16777215).toString(16)}
-        />
+        {loading ? (
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              minHeight: 400 
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <FullCalendar
+            defaultView="dayGridMonth"
+            plugins={[dayGridPlugin, interactionPlugin]}
+            events={events}
+            displayEventEnd="true"
+            eventDisplay="block"
+            eventDidMount={(info) => {
+              // Add hover tooltip functionality
+              const event = info.event;
+              const extendedProps = event.extendedProps;
+              
+              // Create detailed tooltip content
+              const tooltipContent = [
+                `Event: ${event.title}`,
+                extendedProps?.description ? `Description: ${extendedProps.description}` : '',
+                extendedProps?.courseCategory ? `Category: ${extendedProps.courseCategory}` : '',
+                extendedProps?.skillLevel ? `Level: ${extendedProps.skillLevel}` : '',
+                extendedProps?.language ? `Language: ${extendedProps.language}` : '',
+                extendedProps?.numberOfLessons ? `Lessons: ${extendedProps.numberOfLessons}` : '',
+                extendedProps?.duration ? `Duration: ${extendedProps.duration}` : '',
+                `Start: ${event.start ? event.start.toLocaleString() : 'Not set'}`,
+                `End: ${event.end ? event.end.toLocaleString() : 'Not set'}`
+              ].filter(Boolean).join('\n');
+
+              // Add title attribute for native browser tooltip
+              info.el.setAttribute('title', tooltipContent);
+              
+              // Add custom styling for better hover experience
+              info.el.style.cursor = 'pointer';
+              info.el.style.transition = 'all 0.2s ease';
+              
+              // Add hover effects
+              info.el.addEventListener('mouseenter', () => {
+                info.el.style.opacity = '0.8';
+                info.el.style.transform = 'scale(1.02)';
+              });
+              
+              info.el.addEventListener('mouseleave', () => {
+                info.el.style.opacity = '1';
+                info.el.style.transform = 'scale(1)';
+              });
+            }}
+          />
+        )}
       </Card>
 
       {/* Add event modal */}
