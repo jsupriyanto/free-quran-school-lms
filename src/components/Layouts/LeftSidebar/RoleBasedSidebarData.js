@@ -8,7 +8,6 @@ import GridViewIcon from "@mui/icons-material/GridView";
 import CalendarIcon from "@mui/icons-material/CalendarMonth";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PostAddIcon from "@mui/icons-material/PostAdd";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import TeacherIcon from "@mui/icons-material/Person";
 import CourseIcon from "@mui/icons-material/PlayLesson";
 import EnrollmentIcon from "@mui/icons-material/School";
@@ -75,13 +74,6 @@ const getBaseMenuItems = () => [
     icon: <AttendanceIcon />,
     subNav: [],
     permission: canViewAttendances
-  },
-  {
-    title: "Notification",
-    path: "/notification/",
-    icon: <NotificationsNoneIcon />,
-    subNav: [],
-    permission: () => isAuthenticated() // All authenticated users can see notifications
   },
   {
     title: "Settings",
@@ -185,13 +177,6 @@ export const getSidebarDataDE = () => filterMenuByPermissions([
     permission: canViewAttendances
   },
   {
-    title: "Benachrichtigung",
-    path: "/notification/",
-    icon: <NotificationsNoneIcon />,
-    subNav: [],
-    permission: () => isAuthenticated()
-  },
-  {
     title: "Einstellungen",
     path: "/settings/account/",
     icon: <SettingsIcon />,
@@ -272,13 +257,6 @@ export const getSidebarDataAR = () => filterMenuByPermissions([
     icon: <AttendanceIcon />,
     subNav: [],
     permission: canViewAttendances
-  },
-  {
-    title: "الإشعارات",
-    path: "/notification/",
-    icon: <NotificationsNoneIcon />,
-    subNav: [],
-    permission: () => isAuthenticated()
   },
   {
     title: "الإعدادات",
