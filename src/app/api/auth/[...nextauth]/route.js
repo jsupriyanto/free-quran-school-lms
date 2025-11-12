@@ -3,6 +3,10 @@ import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import authService from "@/services/auth.service";
 
+// Configure route as dynamic for NextAuth
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * Takes a token, and returns a new token with updated
  * `accessToken` and `accessTokenExpires`. If an error occurs,
