@@ -20,6 +20,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import LayoutProvider from "@/providers/LayoutProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import { SearchProvider } from "@/contexts/SearchContext";
+import ErrorBoundary from "@/components/Common/ErrorBoundary";
 
 export const metadata = {
 	title: "Free Quran School - Learning Management Dashboard",
@@ -29,7 +30,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
 	return (
 		<html lang="en" dir="ltr" suppressHydrationWarning>
-			<body>
+			<body suppressHydrationWarning>
+				<ErrorBoundary>
 					<AppRouterCacheProvider options={{ enableCssLayer: true }}>
 						<ThemeProvider theme={theme}>
 							{/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
@@ -41,6 +43,7 @@ export default function RootLayout({ children }) {
 							</AuthProvider>
 						</ThemeProvider>
 					</AppRouterCacheProvider>
+				</ErrorBoundary>
 			</body>
 		</html>
 	);

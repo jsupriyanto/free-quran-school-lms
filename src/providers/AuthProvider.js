@@ -7,14 +7,23 @@ import { useEffect, useRef, useState } from "react";
 // Helper functions for third-party sign-in tracking
 const getThirdPartySignInProgress = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem("thirdPartySignInProgress") === "true";
+    try {
+      return localStorage.getItem("thirdPartySignInProgress") === "true";
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+      return false;
+    }
   }
   return false;
 }
 
 const setThirdPartySignInProgress = (value) => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem("thirdPartySignInProgress", value);
+    try {
+      localStorage.setItem("thirdPartySignInProgress", value);
+    } catch (error) {
+      console.error("Error setting localStorage:", error);
+    }
   }
 }
 
@@ -25,16 +34,26 @@ function OAuthSessionHandler({ children }) {
   const pathname = usePathname();
   const hasProcessedSession = useRef(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure we're on the client side
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
-    // Skip processing if already redirecting or if window is not available
-    if (isRedirecting || typeof window === 'undefined') {
+    // Skip processing if not on client, already redirecting, or window is not available
+    if (!isClient || isRedirecting || typeof window === 'undefined') {
       return;
     }
 
     // Handle OAuth token refresh errors
     if (status === "authenticated" && session?.error === "RefreshAccessTokenError") {
-      localStorage.removeItem("user");
+      try {
+        localStorage.removeItem("user");
+      } catch (error) {
+        console.error("Error removing user from localStorage:", error);
+      }
       setThirdPartySignInProgress(false);
       setIsRedirecting(true);
       router.push('/authentication/sign-in');
@@ -44,11 +63,20 @@ function OAuthSessionHandler({ children }) {
     if (status === "authenticated" && session?.user) {
       // Only handle OAuth sessions that have accessToken (from our backend)
       if (session.user.accessToken && !hasProcessedSession.current) {
-        const existingUser = localStorage.getItem("user");
+        let existingUser = null;
+        try {
+          existingUser = localStorage.getItem("user");
+        } catch (error) {
+          console.error("Error reading user from localStorage:", error);
+        }
         
         // If no existing user in localStorage, this is a fresh OAuth login
         if (!existingUser) {
-          localStorage.setItem("user", JSON.stringify(session.user));
+          try {
+            localStorage.setItem("user", JSON.stringify(session.user));
+          } catch (error) {
+            console.error("Error setting user in localStorage:", error);
+          }
           hasProcessedSession.current = true;
           
           // Clear third-party sign-in progress flag after successful OAuth
