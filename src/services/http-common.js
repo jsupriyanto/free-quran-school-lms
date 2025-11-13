@@ -22,7 +22,7 @@ const getThirdPartySignInProgress = () => {
 }
 
 const http = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "https://lms.freequranschool.com/api/",
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "https://api.freequranschool.com/api/",
     headers: {
         "Content-type": "application/json"
     }
