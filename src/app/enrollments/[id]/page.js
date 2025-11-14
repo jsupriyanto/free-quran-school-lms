@@ -25,7 +25,7 @@ const enrollmentOverview = {
   course: {
     title: "Arabic Language Basics",
     description: "Learn the basics of the Arabic language for better understanding of the Quran.",
-    image: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/arabic-class-4J8yYQZxKzLjE9qGfm5P6oAYKpKhQs.jpg",
+    image: "https://freequranschoolstorage.blob.core.windows.net/courses/arabic-class-4J8yYQZxKzLjE9qGfm5P6oAYKpKhQs.jpg",
     level: "Beginner",
     duration: "8 weeks",
     totalLessons: 25,

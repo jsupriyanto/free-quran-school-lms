@@ -22,7 +22,7 @@ const sampleEnrollment = {
   studentPhone: "+1 (555) 123-4567",
   courseId: 4,
   courseName: "Arabic Language Basics",
-  courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/arabic-class-4J8yYQZxKzLjE9qGfm5P6oAYKpKhQs.jpg",
+  courseImage: "https://freequranschoolstorage.blob.core.windows.net/courses/arabic-class-4J8yYQZxKzLjE9qGfm5P6oAYKpKhQs.jpg",
   courseDuration: "8 weeks",
   courseLevel: "Beginner",
   enrollmentDate: "2025-06-15T00:00:00.000Z",

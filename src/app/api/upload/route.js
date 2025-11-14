@@ -1,5 +1,5 @@
-import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { BlobServiceClient } from '@azure/storage-blob';
 
 // Configure route as dynamic for file uploads
 export const dynamic = 'force-dynamic';
@@ -18,17 +18,29 @@ export async function POST(request) {
     const timestamp = Date.now();
     const filename = `user-photos/${timestamp}-${file.name}`;
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, file, {
-      access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+    // Azure Blob Storage setup
+    const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    if (!connectionString) {
+      return NextResponse.json({ error: 'Azure Storage connection string not configured' }, { status: 500 });
+    }
+    const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+    const containerName = 'user-photos';
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    await containerClient.createIfNotExists();
+    const blockBlobClient = containerClient.getBlockBlobClient(`${timestamp}-${file.name}`);
+
+    // Read file as ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Upload to Azure Blob Storage
+    await blockBlobClient.uploadData(buffer, {
+      blobHTTPHeaders: { blobContentType: file.type }
     });
 
-    return NextResponse.json({ 
-      url: blob.url,
-      downloadUrl: blob.downloadUrl 
-    });
+    const url = `https://freequranschoolstorage.blob.core.windows.net/${containerName}/${timestamp}-${file.name}`;
 
+    return NextResponse.json({ url });
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(

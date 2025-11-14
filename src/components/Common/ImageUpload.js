@@ -60,7 +60,7 @@ const ImageUpload = ({
       reader.onload = (e) => setImagePreview(e.target.result);
       reader.readAsDataURL(file);
 
-      // Upload to Vercel Blob
+      // Upload to Azure Blob Storage via API
       const formData = new FormData();
       formData.append('file', file);
 

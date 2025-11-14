@@ -479,7 +479,7 @@ function EnrollmentsPage() {
           studentEmail: student?.email || "",
           courseName: course?.title || "",
           studentAvatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`,
-          courseImage: "https://drdszjyxxzc4mqcy.public.blob.vercel-storage.com/courses/default-course-image.jpg"
+          courseImage: "https://freequranschoolstorage.blob.core.windows.net/courses/default-course-image.jpg"
         };
         setEnrollments([...enrollments, newEnrollment]);
       }
