@@ -39,6 +39,15 @@ function OAuthSessionHandler({ children }) {
   // Ensure we're on the client side
   useEffect(() => {
     setIsClient(true);
+    // Centralized last login check
+    if (typeof window !== 'undefined') {
+      const reloginRequired = require('@/services/auth.service').default.checkLastLoginAndForceRelogin();
+      if (reloginRequired) {
+        setIsRedirecting(true);
+        router.push('/authentication/sign-in');
+        return;
+      }
+    }
   }, []);
 
   useEffect(() => {

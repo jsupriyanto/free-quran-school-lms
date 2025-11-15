@@ -20,6 +20,13 @@ function Page() {
   const router = useRouter();
 
   useEffect(() => {
+    // Centralized last login check
+    const reloginRequired = require('@/services/auth.service').default.checkLastLoginAndForceRelogin();
+    if (reloginRequired) {
+      router.push("/authentication/sign-in");
+      return;
+    }
+
     // Check authentication status after component mounts
     const checkAuthStatus = () => {
       const isThirdPartySignInProgress = authService.getThirdPartySignInProgress();

@@ -9,6 +9,22 @@ const getThirdPartySignInProgress = () => {
 }
 
 class AuthService {
+    // Centralized last login time check
+    checkLastLoginAndForceRelogin() {
+      if (typeof window !== 'undefined') {
+        const lastLogin = localStorage.getItem("lastLogin");
+        if (lastLogin) {
+          const lastLoginDate = new Date(parseInt(lastLogin, 10));
+          const now = new Date();
+          const diffHours = (now - lastLoginDate) / (1000 * 60 * 60);
+          if (diffHours > 8) {
+            localStorage.clear();
+            return true; // Indicates relogin is required
+          }
+        }
+      }
+      return false;
+    }
   signin(username, password) {
     return http.post("/auth/signin", { username, password })
       .then((response) => {
