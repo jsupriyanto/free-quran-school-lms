@@ -3,6 +3,17 @@ const nextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true,
+    domains: [
+      'freequranschoolstorage.blob.core.windows.net'
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'freequranschoolstorage.blob.core.windows.net',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   // Remove output: 'export' for API routes to work
   // Azure Static Web Apps supports Next.js with API routes
@@ -10,8 +21,7 @@ const nextConfig = {
     // Reduce hydration mismatches
     optimizePackageImports: ['@mui/material', '@mui/icons-material']
   },
-  // Optimize for production
-  swcMinify: true,
+  // Optimize for production (swcMinify is now default in Next.js 13+)
   // Add compiler options for better error messages in development
   compiler: {
     // Remove console.log in production
@@ -51,3 +61,5 @@ const nextConfig = {
     ];
   },
 };
+
+export default nextConfig;

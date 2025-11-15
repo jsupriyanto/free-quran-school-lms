@@ -16,6 +16,12 @@ const SubMenu = ({ item }) => {
 	const showSubnav = () => setSubnav(!subnav);
 	const pathname = usePathname();
 	
+	// Add defensive check for item.path
+	if (!item || !item.path) {
+		console.warn('SubMenu received item without path:', item);
+		return null;
+	}
+	
 	return (
 		<>
 			<Link
@@ -38,18 +44,23 @@ const SubMenu = ({ item }) => {
 				</div>
 			</Link>
 			{subnav &&
-				item.subNav.map((item, index) => {
+				item.subNav &&
+				item.subNav.map((subItem, index) => {
+					if (!subItem || !subItem.path) {
+						console.warn('SubMenu received subItem without path:', subItem);
+						return null;
+					}
 					return (
 						<Link
-							href={item.path}
+							href={subItem.path}
 							key={index}
 							className={`${styles.sidebarLink2} ${
-								pathname == item.path &&
+								pathname == subItem.path &&
 								"sidebarLinkActive2"
 							}`}
 						>
-							{item.icon}
-							{item.title}
+							{subItem.icon}
+							{subItem.title}
 						</Link>
 					);
 				})}

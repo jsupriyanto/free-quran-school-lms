@@ -75,9 +75,11 @@ const Sidebar = ({ toogleActive }) => {
 							</IconButton>
 						</Box>
 
-						{getSidebarDataEN().map((item, index) => {
-							return <SubMenu item={item} key={index} />;
-						})}
+						{getSidebarDataEN()
+							.filter(item => item && item.path) // Filter out invalid items
+							.map((item, index) => {
+								return <SubMenu item={item} key={index} />;
+							})}
 					</SidebarWrap>
 				</SidebarNav>
 			</div>

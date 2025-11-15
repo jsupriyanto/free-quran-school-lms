@@ -13,6 +13,7 @@ import CourseIcon from "@mui/icons-material/PlayLesson";
 import EnrollmentIcon from "@mui/icons-material/School";
 import AttendanceIcon from "@mui/icons-material/PresentToAll";
 import ScheduleIcon from "@mui/icons-material/Schedule";
+import EmailIcon from "@mui/icons-material/Email";
 
 import {
   canViewDashboard,
@@ -23,6 +24,7 @@ import {
   canViewEnrollments,
   canViewAttendances,
   canViewSchedules,
+  canViewEmailTemplates,
   isAuthenticated
 } from "@/utils/accessControl";
 
@@ -85,6 +87,13 @@ const getBaseMenuItems = () => [
     permission: canViewAttendances
   },
   {
+    title: "Email Templates",
+    path: "/email-templates/",
+    icon: <EmailIcon />,
+    subNav: [],
+    permission: canViewEmailTemplates
+  },
+  {
     title: "Settings",
     path: "/settings/account/",
     icon: <SettingsIcon />,
@@ -119,17 +128,46 @@ const filterMenuByPermissions = (menuItems) => {
   }
 
   return menuItems.filter(item => {
+    // Ensure item has required properties
+    if (!item || !item.path || !item.title) {
+      console.warn('Invalid menu item found:', item);
+      return false;
+    }
+    
     if (typeof item.permission === 'function') {
-      return item.permission();
+      try {
+        return item.permission();
+      } catch (error) {
+        console.error('Error checking permission for menu item:', item.title, error);
+        return false;
+      }
     }
     return true; // Show item if no permission check defined
   });
 };
 
 // Function to get English menu (called at render time)
-export const getSidebarDataEN = () => filterMenuByPermissions([
-  ...getBaseMenuItems()
-]);
+export const getSidebarDataEN = () => {
+  const baseItems = getBaseMenuItems();
+  // Validate menu items before filtering
+  const validItems = baseItems.filter(item => {
+    if (!item || typeof item !== 'object') {
+      console.warn('Invalid menu item (not an object):', item);
+      return false;
+    }
+    if (!item.path || typeof item.path !== 'string') {
+      console.warn('Invalid menu item path:', item);
+      return false;
+    }
+    if (!item.title || typeof item.title !== 'string') {
+      console.warn('Invalid menu item title:', item);
+      return false;
+    }
+    return true;
+  });
+  
+  return filterMenuByPermissions(validItems);
+};
 
 // For backward compatibility, export a static version (but this should be replaced)
 export const sidebarDataEN = [];
@@ -191,6 +229,13 @@ export const getSidebarDataDE = () => filterMenuByPermissions([
     icon: <AttendanceIcon />,
     subNav: [],
     permission: canViewAttendances
+  },
+  {
+    title: "E-Mail-Vorlagen",
+    path: "/email-templates/",
+    icon: <EmailIcon />,
+    subNav: [],
+    permission: canViewEmailTemplates
   },
   {
     title: "Einstellungen",

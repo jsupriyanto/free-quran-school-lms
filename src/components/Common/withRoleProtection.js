@@ -12,7 +12,9 @@ import {
   canViewAttendances,
   canViewEnrollments,
   canViewDashboard,
-  canViewCalendar
+  canViewCalendar,
+  canViewSchedules,
+  canViewEmailTemplates
 } from "@/utils/accessControl";
 
 /**
@@ -145,6 +147,17 @@ export function withCoursesPageProtection(WrappedComponent) {
 export function withAttendancesPageProtection(WrappedComponent) {
   return withRoleProtection(WrappedComponent, {
     requirePermission: canViewAttendances,
+    redirectTo: '/',
+    blockUsers: true
+  });
+}
+
+/**
+ * Higher-order component specifically for email templates page
+ */
+export function withEmailTemplatesPageProtection(WrappedComponent) {
+  return withRoleProtection(WrappedComponent, {
+    requirePermission: canViewEmailTemplates,
     redirectTo: '/',
     blockUsers: true
   });

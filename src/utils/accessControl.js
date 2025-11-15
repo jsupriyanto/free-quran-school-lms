@@ -165,6 +165,19 @@ export const canViewSchedules = () => {
 };
 
 /**
+ * Check if user can view email templates
+ * @returns {boolean} True if user can view email templates
+ */
+export const canViewEmailTemplates = () => {
+  try {
+    return isAdmin();
+  } catch (error) {
+    console.error('Error checking email templates permission:', error);
+    return false;
+  }
+};
+
+/**
  * Check if user should be blocked from accessing the main app
  * @returns {boolean} True if user should be blocked
  */
